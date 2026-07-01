@@ -117,6 +117,29 @@ body {
   );
 }
 
+/* Pointer-driven 3D tilt (vars set by useTilt). */
+.poke-card {
+  transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))
+    translateY(var(--ty, 0px));
+  transition:
+    transform 0.14s ease-out,
+    box-shadow 0.2s ease-out,
+    background-color 0.2s ease-out,
+    border-color 0.2s ease-out;
+}
+
+/* Holographic sheen that follows the cursor across the card. */
+.poke-card__sheen {
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgb(255 255 255 / 0.3),
+    transparent 45%
+  );
+  opacity: var(--sheen, 0);
+  mix-blend-mode: overlay;
+  transition: opacity 0.2s ease-out;
+}
+
 /* Neon outer glow on card hover (dark mode only). */
 .dark .poke-card:hover {
   box-shadow:

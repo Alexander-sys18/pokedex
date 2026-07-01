@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BackButton } from "@/components/pokemon/back-button";
 import { EvolutionChain } from "@/components/pokemon/evolution-chain";
-import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
+import { PokemonShowcase } from "@/components/pokemon/pokemon-showcase";
 import { StatBars } from "@/components/pokemon/stat-bars";
 import { TypeBadge } from "@/components/pokemon/type-badge";
 import { primaryTypeColor } from "@/lib/pokedex/colors";
@@ -66,16 +66,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         style={{ ["--type" as string]: accent }}
       >
         <div className="grid gap-6 md:grid-cols-[minmax(0,300px)_1fr] md:items-center">
-          <div className="relative mx-auto aspect-square w-full max-w-[300px]">
-            <div className="type-aura absolute inset-0 rounded-full" aria-hidden />
-            <PokemonArtwork
-              id={detail.id}
-              alt={prettifyName(detail.name)}
-              sizes="(max-width: 768px) 70vw, 300px"
-              priority
-              className="drop-shadow-xl"
-            />
-          </div>
+          <PokemonShowcase id={detail.id} accent={accent} alt={prettifyName(detail.name)} />
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2.5">

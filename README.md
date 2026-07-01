@@ -56,9 +56,10 @@ docker compose up --build   # http://localhost:3000
 | **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.             |
 | **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                        |
 
-**Extras** que he añadido: **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a
-la Pokédex»** (chat con Claude), ambos opcionales (ver más abajo); tema claro/oscuro con
-toggle, diseño responsive, ordenación configurable
+**Extras** que he añadido: **visuales 3D** (tarjetas holográficas con tilt + escena WebGL en el
+detalle), **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la Pokédex»**
+(chat con Claude); estos dos últimos opcionales (ver más abajo); tema claro/oscuro con toggle,
+diseño responsive, ordenación configurable
 (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
 español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
 y `prefers-reduced-motion`.
@@ -78,6 +79,8 @@ y `prefers-reduced-motion`.
 | **Radix UI (Select)**                                       | Selectores accesibles (teclado, ARIA) sin reinventar la rueda.                                |
 | **framer-motion**                                           | Micro-animaciones de las barras de estadísticas y transiciones.                               |
 | **next-themes**                                             | Tema claro/oscuro sin _flash_ de hidratación.                                                 |
+| **@anthropic-ai/sdk (Claude)**                              | Asistente con _tool use_ y búsqueda por foto (Claude Vision). Server-side.                    |
+| **three / @react-three/fiber / drei**                       | Escena WebGL del detalle (carga diferida solo en esa ruta).                                   |
 | **Vitest + Testing Library**                                | Tests unitarios de la lógica pura (búsqueda, filtros, normalización).                         |
 
 ---
@@ -170,6 +173,19 @@ Pokémon (comparativas, evoluciones, stats…). Puntos clave:
   enlazan a su ficha.
 
 Para activarlo: define `ANTHROPIC_API_KEY` (y opcionalmente `CHAT_MODEL`) en tu `.env`.
+
+### 7. Visuales 3D (holográfico + WebGL)
+
+- **Tarjetas holográficas** (listado): al pasar el puntero, cada tarjeta se **inclina en 3D**
+  hacia el cursor con un **reflejo holográfico** que lo sigue. Es CSS 3D + un _callback ref_
+  que escribe variables CSS directamente en el nodo (sin re-render por movimiento), así que
+  sigue fluido incluso con la lista virtualizada. Respeta `prefers-reduced-motion`.
+- **Escena 3D en el detalle** (`react-three-fiber` + `drei`): el arte del Pokémon **flota en
+  3D** con un halo del color de su tipo, partículas y arrastre para inclinarlo. Es **mejora
+  progresiva**: el arte estático se renderiza en SSR (rápido + SEO) y solo se «sube» a 3D en
+  clientes con WebGL y sin _reduced-motion_. `three.js` se carga de forma **diferida** (solo en
+  la ruta de detalle, `dynamic(ssr:false)`), no infla el _bundle_ del listado, y va envuelto en
+  un _error boundary_ que cae al arte estático si algo falla.
 
 ---
 

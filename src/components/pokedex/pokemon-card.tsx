@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { TypeBadge } from "@/components/pokemon/type-badge";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
 import { primaryTypeColor } from "@/lib/pokedex/colors";
 import { generationShortLabel } from "@/lib/pokedex/constants";
 import type { PokedexEntry } from "@/lib/pokedex/types";
+import { useTilt } from "@/lib/use-tilt";
 import { cn, formatDexNumber, prettifyName } from "@/lib/utils";
 
 interface PokemonCardProps {
@@ -18,15 +21,17 @@ const CARD_IMAGE_SIZES = "(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 200
 
 export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) {
   const color = primaryTypeColor(entry.types);
+  const tiltRef = useTilt<HTMLAnchorElement>();
 
   return (
     <Link
+      ref={tiltRef}
       href={`/pokemon/${entry.id}`}
       aria-label={`${prettifyName(entry.name)}, ${formatDexNumber(entry.id)}`}
       className={cn(
         "poke-card group border-border bg-surface relative flex flex-col rounded-2xl border p-3",
-        "shadow-[var(--shadow-card)] transition-all duration-200 ease-out",
-        "hover:border-border-strong hover:bg-surface-hover hover:-translate-y-1",
+        "shadow-[var(--shadow-card)] will-change-transform",
+        "hover:border-border-strong hover:bg-surface-hover",
         "hover:shadow-[var(--shadow-card-hover)]",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
       )}
@@ -65,6 +70,12 @@ export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) 
           <TypeBadge key={type} type={type} />
         ))}
       </div>
+
+      {/* Holographic sheen overlay (opacity driven by useTilt). */}
+      <div
+        className="poke-card__sheen pointer-events-none absolute inset-0 rounded-2xl"
+        aria-hidden
+      />
     </Link>
   );
 }

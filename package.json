@@ -24,6 +24,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.107.0",
     "@radix-ui/react-select": "^2.3.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tanstack/react-virtual": "^3.14.4",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.0",
@@ -35,6 +37,7 @@
     "react-dom": "19.2.4",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
+    "three": "^0.185.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -45,6 +48,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",

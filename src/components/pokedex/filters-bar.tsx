@@ -13,6 +13,7 @@ import {
 import { hasActiveFilters, type SortKey } from "@/lib/pokedex/search";
 import type { GenerationNumber, PokemonTypeName } from "@/lib/pokedex/types";
 import type { FilterState } from "@/lib/url-state";
+import { PhotoSearchButton } from "./photo-search-button";
 import { SearchInput } from "./search-input";
 
 const ALL = "all";
@@ -51,8 +52,9 @@ export function FiltersBar({ state }: FiltersBarProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex items-center gap-2">
         <SearchInput value={filters.query} onChange={setQuery} />
+        <PhotoSearchButton onIdentified={setQuery} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

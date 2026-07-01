@@ -56,8 +56,9 @@ docker compose up --build   # http://localhost:3000
 | **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.             |
 | **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                        |
 
-**Extras** que he añadido: **asistente IA «Pregúntale a la Pokédex»** (chat con Claude, ver
-más abajo), tema claro/oscuro con toggle, diseño responsive, ordenación configurable
+**Extras** que he añadido: **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a
+la Pokédex»** (chat con Claude), ambos opcionales (ver más abajo); tema claro/oscuro con
+toggle, diseño responsive, ordenación configurable
 (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
 español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
 y `prefers-reduced-motion`.
@@ -144,10 +145,19 @@ Sistema de tokens en `globals.css`: **claro minimalista premium** y **oscuro ne�
 _glows_ tintados por el tipo del Pokémon), conmutados por clase con `next-themes`. Colores de
 tipo con contraste de texto calculado por luminancia (WCAG).
 
-### 6. Asistente IA «Pregúntale a la Pokédex»
+### 6. IA en el producto: asistente + búsqueda por foto
 
-Chat flotante potenciado por **Claude** (API de Anthropic) que responde preguntas sobre
-cualquier Pokémon (comparativas, evoluciones, stats…). Puntos clave:
+Dos funciones potenciadas por **Claude** (API de Anthropic), ambas server-side y con la misma
+`ANTHROPIC_API_KEY` (que **nunca** llega al cliente):
+
+**Búsqueda por foto** (`src/app/api/vision/route.ts`). El usuario hace/sube una foto (arte,
+dibujo, peluche, carta…) y **Claude Vision** identifica el Pokémon. La imagen se **comprime en
+el cliente** (≤512px JPEG) para minimizar coste; el servidor resuelve el nombre a un id del
+índice y rellena el buscador → reutiliza toda la búsqueda evolutiva existente. Si no reconoce
+nada, lo dice con claridad.
+
+**Asistente «Pregúntale a la Pokédex»** — chat flotante que responde preguntas sobre cualquier
+Pokémon (comparativas, evoluciones, stats…). Puntos clave:
 
 - **Grounded con _tool use_**: el modelo no inventa datos; llama a herramientas server-side
   (`buscar_pokemon`, `detalle_pokemon`) que consultan el índice local y la PokéAPI. Bucle
@@ -257,9 +267,9 @@ Dos planos distintos:
   andamiaje repetitivo, contrastar enfoques (estrategia de datos, virtualización, preservación
   de estado) y depurar. Todas las decisiones de arquitectura, la estructura del código y los
   _trade-offs_ descritos aquí son propios y puedo defenderlos y explicarlos en detalle.
-- **Como parte del producto**: la app integra un asistente basado en **Claude** (API de
-  Anthropic) con _tool use_ para responder sobre Pokémon de forma fundamentada (ver
-  «Asistente IA» arriba).
+- **Como parte del producto**: la app integra **Claude** (API de Anthropic) en dos funciones —
+  un asistente con _tool use_ que responde de forma fundamentada, y una **búsqueda por foto**
+  con Claude Vision (ver «IA en el producto» arriba).
 
 ---
 

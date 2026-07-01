@@ -56,10 +56,11 @@ docker compose up --build   # http://localhost:3000
 | **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.             |
 | **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                        |
 
-**Extras** que he añadido: tema claro/oscuro con toggle, diseño responsive, ordenación
-configurable (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la
-Pokédex en español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA,
-foco visible) y `prefers-reduced-motion`.
+**Extras** que he añadido: **asistente IA «Pregúntale a la Pokédex»** (chat con Claude, ver
+más abajo), tema claro/oscuro con toggle, diseño responsive, ordenación configurable
+(nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
+español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
+y `prefers-reduced-motion`.
 
 ---
 
@@ -143,6 +144,23 @@ Sistema de tokens en `globals.css`: **claro minimalista premium** y **oscuro ne�
 _glows_ tintados por el tipo del Pokémon), conmutados por clase con `next-themes`. Colores de
 tipo con contraste de texto calculado por luminancia (WCAG).
 
+### 6. Asistente IA «Pregúntale a la Pokédex»
+
+Chat flotante potenciado por **Claude** (API de Anthropic) que responde preguntas sobre
+cualquier Pokémon (comparativas, evoluciones, stats…). Puntos clave:
+
+- **Grounded con _tool use_**: el modelo no inventa datos; llama a herramientas server-side
+  (`buscar_pokemon`, `detalle_pokemon`) que consultan el índice local y la PokéAPI. Bucle
+  agéntico manual con **streaming** (`src/app/api/chat/route.ts`).
+- **Seguridad**: la `ANTHROPIC_API_KEY` vive **solo en el servidor** (route handler); nunca
+  llega al cliente. Rate limiting básico en memoria y validación de entrada con Zod.
+- **Degradación elegante**: si no hay clave, el endpoint responde `enabled: false` y el widget
+  **no se muestra** — la app funciona igual sin IA.
+- **UX**: respuestas en streaming (NDJSON), y _chips_ clicables de los Pokémon mencionados que
+  enlazan a su ficha.
+
+Para activarlo: define `ANTHROPIC_API_KEY` (y opcionalmente `CHAT_MODEL`) en tu `.env`.
+
 ---
 
 ## 🗂️ Estructura del proyecto
@@ -203,10 +221,12 @@ pnpm test
 
 Todas son opcionales (hay valores por defecto sensatos). Ver `.env.example`.
 
-| Variable                     | Por defecto                 | Descripción                     |
-| ---------------------------- | --------------------------- | ------------------------------- |
-| `POKEAPI_BASE_URL`           | `https://pokeapi.co/api/v2` | Base de la PokéAPI.             |
-| `POKEAPI_REVALIDATE_SECONDS` | `86400`                     | TTL de caché (ISR) del detalle. |
+| Variable                     | Por defecto                 | Descripción                                                               |
+| ---------------------------- | --------------------------- | ------------------------------------------------------------------------- |
+| `POKEAPI_BASE_URL`           | `https://pokeapi.co/api/v2` | Base de la PokéAPI.                                                       |
+| `POKEAPI_REVALIDATE_SECONDS` | `86400`                     | TTL de caché (ISR) del detalle.                                           |
+| `ANTHROPIC_API_KEY`          | _(vacío)_                   | Habilita el asistente IA; sin ella el chat no aparece. **Solo servidor.** |
+| `CHAT_MODEL`                 | `claude-opus-4-8`           | Modelo del chat (p. ej. `claude-haiku-4-5` para menor coste).             |
 
 ---
 
@@ -231,10 +251,15 @@ es pequeña y arranca rápido.
 
 ## 🤖 Uso de IA
 
-He utilizado un asistente de IA (Claude) como apoyo para acelerar el andamiaje repetitivo,
-contrastar enfoques (estrategia de datos, virtualización, preservación de estado) y depurar.
-Todas las decisiones de arquitectura, la estructura del código y los _trade-offs_ descritos
-aquí son propios y puedo defenderlos y explicarlos en detalle.
+Dos planos distintos:
+
+- **Como herramienta de desarrollo**: he usado un asistente de IA (Claude) para acelerar el
+  andamiaje repetitivo, contrastar enfoques (estrategia de datos, virtualización, preservación
+  de estado) y depurar. Todas las decisiones de arquitectura, la estructura del código y los
+  _trade-offs_ descritos aquí son propios y puedo defenderlos y explicarlos en detalle.
+- **Como parte del producto**: la app integra un asistente basado en **Claude** (API de
+  Anthropic) con _tool use_ para responder sobre Pokémon de forma fundamentada (ver
+  «Asistente IA» arriba).
 
 ---
 

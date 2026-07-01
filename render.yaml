@@ -12,3 +12,8 @@ services:
     envVars:
       - key: POKEAPI_REVALIDATE_SECONDS
         value: "86400"
+      # Optional AI assistant. Set the value in the Render dashboard (never commit it).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CHAT_MODEL
+        value: claude-opus-4-8

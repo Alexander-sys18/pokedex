@@ -10,4 +10,8 @@ services:
     environment:
       - NODE_ENV=production
       - POKEAPI_REVALIDATE_SECONDS=86400
+      # Optional: enables the "Pregúntale a la Pokédex" AI assistant.
+      # Reads from your shell/.env; leave unset to run without the assistant.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CHAT_MODEL=${CHAT_MODEL:-claude-opus-4-8}
     restart: unless-stopped

@@ -6,6 +6,7 @@ import { applyFilters, hasActiveFilters, toSearchable } from "@/lib/pokedex/sear
 import type { PokedexEntry } from "@/lib/pokedex/types";
 import { saveListScroll } from "@/lib/scroll-store";
 import { useFilterState } from "@/lib/url-state";
+import { FeaturedPokemon } from "./featured-pokemon";
 import { FiltersBar } from "./filters-bar";
 import { PokemonGrid } from "./pokemon-grid";
 
@@ -43,6 +44,9 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
   return (
     <div className="flex flex-col gap-5">
       <FiltersBar state={state} />
+
+      {/* Daily highlight — hidden while the user is actively filtering. */}
+      {!filtersActive ? <FeaturedPokemon entries={entries} /> : null}
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-muted-foreground text-sm">

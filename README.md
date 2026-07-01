@@ -41,25 +41,27 @@ docker compose up --build   # http://localhost:3000
 
 ## ✅ Requisitos funcionales cubiertos
 
-| Requisito                                    | Implementación                                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Listado ordenado por id**                  | Grid virtualizado con los 1025 Pokémon; orden por nº ascendente por defecto.               |
-| **Nombre, generación y tipos**               | Cada tarjeta muestra nº de Pokédex, nombre, generación y badges de tipo.                   |
-| **Filtro por tipo**                          | Selector accesible con los 18 tipos.                                                       |
-| **Filtro por generación**                    | Selector con las 9 generaciones y su región.                                               |
-| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes, sin recargar.                                                |
-| **Búsqueda incluyendo evoluciones**          | Buscar `pikachu` muestra también `pichu` y `raichu` (familia evolutiva completa).          |
-| **Página de detalle**                        | Nombre, imagen, generación, tipos, estadísticas y evoluciones.                             |
-| **Evoluciones con imágenes y navegación**    | Cadena evolutiva con ramas (p. ej. Eevee); cada nodo enlaza a su ficha.                    |
-| **Pokémon actual identificado en su cadena** | El nodo actual se resalta con su color de tipo y la etiqueta «Actual».                     |
-| **Estado preservado al volver**              | Filtros, texto de búsqueda, orden y posición de scroll se mantienen al volver del detalle. |
-| **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.             |
-| **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                        |
+| Requisito                                    | Implementación                                                                                                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Listado ordenado por id**                  | Grid virtualizado con los 1025 Pokémon; orden por nº ascendente por defecto.                                                                                             |
+| **Nombre, generación y tipos**               | Cada tarjeta muestra nº de Pokédex, nombre, generación y badges de tipo.                                                                                                 |
+| **Filtro por tipo**                          | Selector accesible con los 18 tipos.                                                                                                                                     |
+| **Filtro por generación**                    | Selector con las 9 generaciones y su región.                                                                                                                             |
+| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes, sin recargar.                                                                                                                              |
+| **Búsqueda incluyendo evoluciones**          | Buscar `pikachu` muestra también `pichu` y `raichu` (familia evolutiva completa).                                                                                        |
+| **Página de detalle**                        | Nombre, imagen (3D/shiny), generación, tipos, estadísticas (barras + radar) y evoluciones — más debilidades, localizaciones, cría, entrenamiento, curiosidades y formas. |
+| **Evoluciones con imágenes y navegación**    | Cadena evolutiva con ramas (p. ej. Eevee); cada nodo enlaza a su ficha.                                                                                                  |
+| **Pokémon actual identificado en su cadena** | El nodo actual se resalta con su color de tipo y la etiqueta «Actual».                                                                                                   |
+| **Estado preservado al volver**              | Filtros, texto de búsqueda, orden y posición de scroll se mantienen al volver del detalle.                                                                               |
+| **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.                                                                                           |
+| **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                                                                                                      |
 
-**Extras** que he añadido: **visuales 3D** (tarjetas holográficas con tilt + escena WebGL en el
-detalle), **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la Pokédex»**
-(chat con Claude); estos dos últimos opcionales (ver más abajo); tema claro/oscuro con toggle,
-diseño responsive, ordenación configurable
+**Extras** que he añadido: **ficha enciclopédica** (dónde encontrarlo por juego, curiosidades
+de la Pokédex, debilidades/resistencias, cría, entrenamiento, shiny, grito, formas, radar de
+stats — ver §8), **visuales 3D** (tarjetas holográficas con tilt + escena WebGL en el detalle),
+**búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la Pokédex»** (chat con
+Claude); estos dos últimos opcionales (ver más abajo); **Pokémon del día** en la home; tema
+claro/oscuro con toggle, diseño responsive, ordenación configurable
 (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
 español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
 y `prefers-reduced-motion`.
@@ -186,6 +188,36 @@ Para activarlo: define `ANTHROPIC_API_KEY` (y opcionalmente `CHAT_MODEL`) en tu 
   clientes con WebGL y sin _reduced-motion_. `three.js` se carga de forma **diferida** (solo en
   la ruta de detalle, `dynamic(ssr:false)`), no infla el _bundle_ del listado, y va envuelto en
   un _error boundary_ que cae al arte estático si algo falla.
+
+### 8. Ficha «enciclopédica»: todo lo que la PokéAPI sabe de cada Pokémon
+
+Además de lo básico, la página de detalle explota a fondo la PokéAPI (todo server-side, con
+ISR — cero peticiones extra desde el cliente):
+
+- **Dónde encontrarlo** (`/pokemon/{id}/encounters`): localizaciones salvajes agrupadas **por
+  juego** (nombres de juegos en español, de más reciente a más antiguo). Si no aparece salvaje,
+  lo explica (evolución / intercambio / eventos).
+- **Curiosidades de la Pokédex**: entradas de distintas ediciones (deduplicadas, en español con
+  _fallback_ a inglés) citadas con su juego de origen.
+- **Debilidades y resistencias**: la tabla de tipos Gen VI+ va **embebida como dato** y se
+  calculan los multiplicadores (×4, ×2, ×½, ×¼, ×0) del tipado — con **tests unitarios** que
+  fijan matchups conocidos (p. ej. Charizard ×4 Roca, inmune a Tierra).
+- **Entrenamiento**: ratio de captura y felicidad base (con medidor /255), ritmo de
+  crecimiento, experiencia base y puntos de esfuerzo (EVs).
+- **Cría**: grupos huevo, ciclos de eclosión (≈ pasos) y **ratio de género** con barra ♂/♀
+  (o «Sin género»).
+- **Rasgos**: habilidades (marcando la **oculta**), hábitat, color, silueta y objetos que puede
+  llevar en estado salvaje.
+- **Identidad**: categoría («Pokémon Ratón»), nombre **japonés** decorativo en katakana, e
+  insignias de **Legendario / Singular / Bebé**.
+- **Radar hexagonal de stats** (SVG puro, sin librerías) junto a las barras.
+- **Shiny y grito**: alterna el arte normal/variocolor (también en la escena 3D) y reproduce el
+  **grito** del Pokémon (audio de PokéAPI, se oculta si el navegador no soporta ogg).
+- **Otras formas**: megaevoluciones, formas regionales y variantes con su propio arte.
+- **Navegación anterior/siguiente** con nombre y sprite del vecino de la Pokédex.
+
+En la home: chips con datos del dex (1025 Pokémon, 541 familias, 9 generaciones, 18 tipos) y un
+**«Pokémon del día»** determinista por fecha (client-side, la home sigue siendo estática).
 
 ---
 

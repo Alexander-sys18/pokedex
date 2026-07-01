@@ -4,19 +4,19 @@ import { Float, OrbitControls, Sparkles, useTexture } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo } from "react";
 import { AdditiveBlending, CanvasTexture, SRGBColorSpace } from "three";
-import { officialArtwork } from "@/lib/pokedex/image";
 
-/** The Pokémon's official artwork as a floating textured plane. */
-function ArtworkPlane({ id, onReady }: { id: number; onReady?: () => void }) {
-  const texture = useTexture(officialArtwork(id), (loaded) => {
+/** The Pokémon's artwork as a floating textured plane. */
+function ArtworkPlane({ textureUrl, onReady }: { textureUrl: string; onReady?: () => void }) {
+  const texture = useTexture(textureUrl, (loaded) => {
     // Configure color space at load time (mutating the hook's return is disallowed).
     const tex = Array.isArray(loaded) ? loaded[0] : loaded;
     if (tex) tex.colorSpace = SRGBColorSpace;
   });
-  // useTexture suspends until loaded, so this fires once the artwork is ready.
+  // useTexture suspends until loaded, so this fires once per loaded texture
+  // (including when the URL changes, e.g. toggling shiny).
   useEffect(() => {
     onReady?.();
-  }, [onReady]);
+  }, [texture, onReady]);
   return (
     <Float speed={1.5} rotationIntensity={0.5} floatIntensity={0.9}>
       <mesh>
@@ -68,11 +68,11 @@ function Glow({ accent }: { accent: string }) {
 }
 
 export default function Pokemon3DScene({
-  id,
+  textureUrl,
   accent,
   onReady,
 }: {
-  id: number;
+  textureUrl: string;
   accent: string;
   onReady?: () => void;
 }) {
@@ -85,7 +85,7 @@ export default function Pokemon3DScene({
     >
       <Glow accent={accent} />
       <Suspense fallback={null}>
-        <ArtworkPlane id={id} onReady={onReady} />
+        <ArtworkPlane textureUrl={textureUrl} onReady={onReady} />
       </Suspense>
       <Sparkles count={40} scale={[6, 6, 3]} size={3} speed={0.35} opacity={0.7} color={accent} />
       <OrbitControls

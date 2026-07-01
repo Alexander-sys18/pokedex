@@ -55,12 +55,13 @@ export const evolutionChainSchema = z.object({
   chain: chainLinkSchema,
 });
 
-/** `/pokemon/{name}` — detail view (types, stats, physique, abilities). */
+/** `/pokemon/{name}` — detail view (types, stats, physique, abilities, cries…). */
 export const pokemonSchema = z.object({
   id: z.number(),
   name: z.string(),
   height: z.number(),
   weight: z.number(),
+  base_experience: z.number().nullable(),
   types: z.array(
     z.object({
       slot: z.number(),
@@ -70,6 +71,7 @@ export const pokemonSchema = z.object({
   stats: z.array(
     z.object({
       base_stat: z.number(),
+      effort: z.number(),
       stat: namedResourceSchema,
     }),
   ),
@@ -79,10 +81,33 @@ export const pokemonSchema = z.object({
       is_hidden: z.boolean(),
     }),
   ),
+  held_items: z.array(z.object({ item: namedResourceSchema })).optional(),
+  cries: z
+    .object({
+      latest: z.string().nullable(),
+      legacy: z.string().nullable(),
+    })
+    .optional(),
   species: namedResourceSchema,
 });
 
-/** `/pokemon-species/{name}` — generation, evolution chain link, flavor text. */
+/** `/pokemon/{id}/encounters` — wild encounter locations per game version. */
+export const encountersSchema = z.array(
+  z.object({
+    location_area: namedResourceSchema,
+    version_details: z.array(
+      z.object({
+        version: namedResourceSchema,
+        max_chance: z.number(),
+      }),
+    ),
+  }),
+);
+
+/**
+ * `/pokemon-species/{name}` — generation, evolution chain, flavor texts,
+ * category, breeding data, capture data, lore flags, forms and localized names.
+ */
 export const pokemonSpeciesSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -92,6 +117,24 @@ export const pokemonSpeciesSchema = z.object({
     z.object({
       flavor_text: z.string(),
       language: namedResourceSchema,
+      version: namedResourceSchema.nullable().optional(),
     }),
   ),
+  genera: z.array(z.object({ genus: z.string(), language: namedResourceSchema })).optional(),
+  names: z.array(z.object({ name: z.string(), language: namedResourceSchema })).optional(),
+  capture_rate: z.number().nullable().optional(),
+  base_happiness: z.number().nullable().optional(),
+  growth_rate: namedResourceSchema.nullable().optional(),
+  egg_groups: z.array(namedResourceSchema).optional(),
+  gender_rate: z.number().nullable().optional(),
+  hatch_counter: z.number().nullable().optional(),
+  is_legendary: z.boolean().optional(),
+  is_mythical: z.boolean().optional(),
+  is_baby: z.boolean().optional(),
+  habitat: namedResourceSchema.nullable().optional(),
+  color: namedResourceSchema.nullable().optional(),
+  shape: namedResourceSchema.nullable().optional(),
+  varieties: z
+    .array(z.object({ is_default: z.boolean(), pokemon: namedResourceSchema }))
+    .optional(),
 });

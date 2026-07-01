@@ -7,13 +7,23 @@ import {
   pokeFetch,
 } from "@/lib/pokeapi/client";
 import {
+  encountersSchema,
   evolutionChainSchema,
   pokemonSchema,
   pokemonSpeciesSchema,
   type ChainLink,
 } from "@/lib/pokeapi/schemas";
+import { normalizeSearch, prettifyName } from "@/lib/utils";
 import { POKEMON_TYPES, STAT_ORDER } from "./constants";
-import type { EvolutionNode, PokemonDetail, PokemonTypeName, StatValue } from "./types";
+import { VERSION_ORDER } from "./labels";
+import type {
+  EvolutionNode,
+  FlavorEntry,
+  PokemonDetail,
+  PokemonTypeName,
+  StatValue,
+  VersionEncounters,
+} from "./types";
 
 const REVALIDATE = Number(process.env.POKEAPI_REVALIDATE_SECONDS ?? 86_400);
 const KNOWN_TYPES = new Set<string>(POKEMON_TYPES);
@@ -31,15 +41,67 @@ function collectFamilyIds(node: EvolutionNode, out: number[]): void {
   node.children.forEach((child) => collectFamilyIds(child, out));
 }
 
-/** Pick a localized Pokédex description (Spanish preferred, English fallback). */
-function pickDescription(
-  entries: { flavor_text: string; language: { name: string } }[],
-): string | null {
+/** Flavor text is littered with control chars (\n, \f, soft hyphens). */
+function cleanFlavor(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+type RawFlavorEntry = {
+  flavor_text: string;
+  language: { name: string };
+  version?: { name: string } | null;
+};
+
+/** Pick the main localized description (Spanish preferred, English fallback). */
+function pickDescription(entries: RawFlavorEntry[]): string | null {
   const preferred =
     entries.find((e) => e.language.name === "es") ?? entries.find((e) => e.language.name === "en");
-  if (!preferred) return null;
-  // Flavor text is littered with control chars (\n, \f, soft hyphens).
-  return preferred.flavor_text.replace(/\s+/g, " ").trim();
+  return preferred ? cleanFlavor(preferred.flavor_text) : null;
+}
+
+/**
+ * Collect distinct Pokédex entries across games ("curiosidades"): Spanish when
+ * available, English otherwise; deduplicated by normalized text.
+ */
+function collectFlavorEntries(
+  entries: RawFlavorEntry[],
+  excludeText: string | null,
+): FlavorEntry[] {
+  const collect = (lang: string): FlavorEntry[] => {
+    const seen = new Set<string>();
+    if (excludeText) seen.add(normalizeSearch(excludeText));
+    const out: FlavorEntry[] = [];
+    for (const entry of entries) {
+      if (entry.language.name !== lang) continue;
+      const text = cleanFlavor(entry.flavor_text);
+      const key = normalizeSearch(text);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push({ text, version: entry.version?.name ?? null });
+      if (out.length >= 6) break;
+    }
+    return out;
+  };
+
+  const spanish = collect("es");
+  return spanish.length > 0 ? spanish : collect("en");
+}
+
+/** Pivot the encounters payload into per-version location lists, newest first. */
+function groupEncounters(
+  raw: { location_area: { name: string }; version_details: { version: { name: string } }[] }[],
+): VersionEncounters[] {
+  const byVersion = new Map<string, Set<string>>();
+  for (const area of raw) {
+    for (const detail of area.version_details) {
+      const set = byVersion.get(detail.version.name) ?? new Set<string>();
+      set.add(area.location_area.name);
+      byVersion.set(detail.version.name, set);
+    }
+  }
+  return [...byVersion.entries()]
+    .sort((a, b) => VERSION_ORDER.indexOf(b[0]) - VERSION_ORDER.indexOf(a[0]))
+    .map(([version, locations]) => ({ version, locations: [...locations] }));
 }
 
 function orderStats(stats: { base_stat: number; stat: { name: string } }[]): StatValue[] {
@@ -56,9 +118,13 @@ function orderStats(stats: { base_stat: number; stat: { name: string } }[]): Sta
  */
 export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail | null> => {
   try {
-    const [pokemon, species] = await Promise.all([
+    const [pokemon, species, rawEncounters] = await Promise.all([
       pokeFetch(`/pokemon/${id}`, pokemonSchema, { revalidate: REVALIDATE }),
       pokeFetch(`/pokemon-species/${id}`, pokemonSpeciesSchema, { revalidate: REVALIDATE }),
+      // Encounters are enrichment — never fail the page because of them.
+      pokeFetch(`/pokemon/${id}/encounters`, encountersSchema, {
+        revalidate: REVALIDATE,
+      }).catch(() => []),
     ]);
 
     let evolutionRoot: EvolutionNode | null = null;
@@ -78,6 +144,10 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
       .filter((name): name is PokemonTypeName => KNOWN_TYPES.has(name));
 
     const stats = orderStats(pokemon.stats);
+    const description = pickDescription(species.flavor_text_entries);
+
+    const genera = species.genera ?? [];
+    const names = species.names ?? [];
 
     return {
       id: pokemon.id,
@@ -90,10 +160,52 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
       statTotal: stats.reduce((sum, s) => sum + s.base, 0),
       heightMeters: pokemon.height / 10,
       weightKilograms: pokemon.weight / 10,
-      abilities: pokemon.abilities.map((a) => a.ability.name),
-      description: pickDescription(species.flavor_text_entries),
+      abilities: pokemon.abilities.map((a) => ({
+        name: a.ability.name,
+        hidden: a.is_hidden,
+      })),
+      description,
       evolutionRoot,
       familyIds,
+
+      genus:
+        genera.find((g) => g.language.name === "es")?.genus ??
+        genera.find((g) => g.language.name === "en")?.genus ??
+        null,
+      japaneseName:
+        names.find((n) => n.language.name === "ja-Hrkt")?.name ??
+        names.find((n) => n.language.name === "ja")?.name ??
+        null,
+      isLegendary: species.is_legendary ?? false,
+      isMythical: species.is_mythical ?? false,
+      isBaby: species.is_baby ?? false,
+      flavorEntries: collectFlavorEntries(species.flavor_text_entries, description),
+
+      baseExperience: pokemon.base_experience,
+      captureRate: species.capture_rate ?? null,
+      baseHappiness: species.base_happiness ?? null,
+      growthRate: species.growth_rate?.name ?? null,
+      evYield: pokemon.stats
+        .filter((s) => s.effort > 0)
+        .map((s) => ({ name: s.stat.name, value: s.effort })),
+      heldItems: (pokemon.held_items ?? []).map((h) => prettifyName(h.item.name)),
+
+      eggGroups: (species.egg_groups ?? []).map((g) => g.name),
+      genderRate: species.gender_rate ?? null,
+      hatchCounter: species.hatch_counter ?? null,
+
+      habitat: species.habitat?.name ?? null,
+      color: species.color?.name ?? null,
+      shape: species.shape?.name ?? null,
+
+      cries: {
+        latest: pokemon.cries?.latest ?? null,
+        legacy: pokemon.cries?.legacy ?? null,
+      },
+      encounters: groupEncounters(rawEncounters),
+      varieties: (species.varieties ?? [])
+        .filter((v) => !v.is_default)
+        .map((v) => ({ id: idFromUrl(v.pokemon.url), name: prettifyName(v.pokemon.name) })),
     };
   } catch (error) {
     if (error instanceof NonRetryableHttpError && error.status === 404) {

@@ -8,6 +8,7 @@ import {
   generationLabel,
 } from "@/lib/pokedex/constants";
 import { getPokemonDetail } from "@/lib/pokedex/detail";
+import { eggGroupLabel, locationLabel, versionLabel } from "@/lib/pokedex/labels";
 import { getPokedex } from "@/lib/pokedex";
 import type { EvolutionNode, PokemonTypeName } from "@/lib/pokedex/types";
 import { normalizeSearch, prettifyName } from "@/lib/utils";
@@ -69,8 +70,10 @@ export interface ToolResult {
 /** Resolve a name-or-id string to a national dex id using the prebuilt index. */
 async function resolveId(nameOrId: string): Promise<number | null> {
   const trimmed = nameOrId.trim();
-  if (/^[1-9]\d*$/.test(trimmed)) {
-    const id = Number(trimmed);
+  // Accept dex formats the app itself displays: "25", "#25", "025", "#0025".
+  const numeric = trimmed.replace(/^#/, "").replace(/^0+(?=\d)/, "");
+  if (/^\d+$/.test(numeric)) {
+    const id = Number(numeric);
     return id >= 1 && id <= 1025 ? id : null;
   }
   const pokedex = await getPokedex();
@@ -137,6 +140,7 @@ async function detallePokemon(input: Record<string, unknown>): Promise<ToolResul
   const compact = {
     id: detail.id,
     nombre: prettifyName(detail.name),
+    categoria: detail.genus,
     generacion: generationLabel(detail.generation),
     region: GENERATION_REGIONS[detail.generation],
     tipos: detail.types.map((t) => TYPE_LABELS_ES[t]),
@@ -147,9 +151,25 @@ async function detallePokemon(input: Record<string, unknown>): Promise<ToolResul
     total_estadisticas: detail.statTotal,
     altura_m: detail.heightMeters,
     peso_kg: detail.weightKilograms,
-    habilidades: detail.abilities.map(prettifyName),
+    habilidades: detail.abilities.map((a) =>
+      a.hidden ? `${prettifyName(a.name)} (oculta)` : prettifyName(a.name),
+    ),
+    es_legendario: detail.isLegendary,
+    es_singular: detail.isMythical,
+    ratio_captura: detail.captureRate !== null ? `${detail.captureRate}/255` : null,
+    grupos_huevo: detail.eggGroups.map(eggGroupLabel),
     descripcion: detail.description,
     familia_evolutiva: evoluciones,
+    donde_encontrar:
+      detail.encounters.length > 0
+        ? detail.encounters.slice(0, 4).map((e) => ({
+            juego: versionLabel(e.version),
+            lugares: e.locations.slice(0, 3).map(locationLabel),
+          }))
+        : "La PokéAPI no registra localizaciones salvajes para este Pokémon. Puede que no aparezca " +
+          "salvaje (se obtiene evolucionando, por intercambio o eventos) o que sus juegos aún no " +
+          "tengan datos de encuentros (p. ej. Escarlata/Púrpura). Indica esta incertidumbre al responder.",
+    curiosidades: detail.flavorEntries.slice(0, 2).map((f) => f.text),
   };
 
   return {

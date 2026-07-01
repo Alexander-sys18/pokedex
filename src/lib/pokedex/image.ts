@@ -5,6 +5,11 @@ export function officialArtwork(id: number): string {
   return `${SPRITES_BASE}/other/official-artwork/${id}.png`;
 }
 
+/** Shiny variant of the official artwork. */
+export function shinyArtwork(id: number): string {
+  return `${SPRITES_BASE}/other/official-artwork/shiny/${id}.png`;
+}
+
 /** Pokémon HOME render (512×512). Slightly softer look, good fallback. */
 export function homeArtwork(id: number): string {
   return `${SPRITES_BASE}/other/home/${id}.png`;

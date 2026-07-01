@@ -1,0 +1,7 @@
+# Normalize line endings across platforms (avoids CRLF/LF churn).
+* text=auto eol=lf
+
+# Binary / generated
+pnpm-lock.yaml -diff
+*.png binary
+*.ico binary

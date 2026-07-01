@@ -20,6 +20,7 @@ import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
 import { PokemonShowcase } from "@/components/pokemon/pokemon-showcase";
 import { StatBars } from "@/components/pokemon/stat-bars";
 import { StatRadar } from "@/components/pokemon/stat-radar";
+import { TcgCards } from "@/components/pokemon/tcg-cards";
 import { TypeBadge } from "@/components/pokemon/type-badge";
 import { TypeEffectiveness } from "@/components/pokemon/type-effectiveness";
 import { getPokedex } from "@/lib/pokedex";
@@ -42,6 +43,7 @@ import {
   versionLabel,
 } from "@/lib/pokedex/labels";
 import type { PokemonDetail } from "@/lib/pokedex/types";
+import { getTcgCards } from "@/lib/tcg";
 import { cn, formatDexNumber, prettifyName } from "@/lib/utils";
 
 interface PageProps {
@@ -76,6 +78,9 @@ export default async function PokemonDetailPage({ params }: PageProps) {
 
   const [detail, pokedex] = await Promise.all([getPokemonDetail(parsed), getPokedex()]);
   if (!detail) notFound();
+
+  // Card scans are pure enrichment — fetched after we know the species slug.
+  const cards = await getTcgCards(detail.name);
 
   const accent = primaryTypeColor(detail.types);
   const region = GENERATION_REGIONS[detail.generation];
@@ -338,6 +343,13 @@ export default async function PokemonDetailPage({ params }: PageProps) {
           <p className="text-muted-foreground text-sm">Sin datos de evolución.</p>
         )}
       </Panel>
+
+      {/* Trading cards */}
+      {cards.length > 0 ? (
+        <Panel title="Cartas del JCC">
+          <TcgCards cards={cards} />
+        </Panel>
+      ) : null}
 
       {/* Alternative forms */}
       {detail.varieties.length > 0 ? (

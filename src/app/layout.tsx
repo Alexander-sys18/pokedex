@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { Providers } from "@/components/providers";
+import { ScrollTopButton } from "@/components/scroll-top-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </main>
           <SiteFooter />
           <ChatWidget />
+          <ScrollTopButton />
         </Providers>
       </body>
     </html>

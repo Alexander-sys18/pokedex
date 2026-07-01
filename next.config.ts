@@ -13,12 +13,17 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Official artwork and sprites are served from the PokéAPI sprites repo.
     remotePatterns: [
+      // Official artwork and sprites are served from the PokéAPI sprites repo.
       {
         protocol: "https",
         hostname: "raw.githubusercontent.com",
         pathname: "/PokeAPI/sprites/**",
+      },
+      // Trading-card scans (Spanish) from TCGdex.
+      {
+        protocol: "https",
+        hostname: "assets.tcgdex.net",
       },
     ],
   },

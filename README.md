@@ -43,7 +43,7 @@ docker compose up --build   # http://localhost:3000
 
 | Requisito                                    | Implementación                                                                                                                                                           |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Listado ordenado por id**                  | Grid virtualizado con los 1025 Pokémon; orden por nº ascendente por defecto.                                                                                             |
+| **Listado ordenado por id**                  | Grid paginado (60/página, **instantáneo**: la paginación es un _slice_ en memoria); orden por nº ascendente por defecto.                                                 |
 | **Nombre, generación y tipos**               | Cada tarjeta muestra nº de Pokédex, nombre, generación y badges de tipo.                                                                                                 |
 | **Filtro por tipo**                          | Selector accesible con los 18 tipos.                                                                                                                                     |
 | **Filtro por generación**                    | Selector con las 9 generaciones y su región.                                                                                                                             |
@@ -57,11 +57,13 @@ docker compose up --build   # http://localhost:3000
 | **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                                                                                                      |
 
 **Extras** que he añadido: **ficha enciclopédica** (dónde encontrarlo por juego, curiosidades
-de la Pokédex, debilidades/resistencias, cría, entrenamiento, shiny, grito, formas, radar de
-stats — ver §8), **visuales 3D** (tarjetas holográficas con tilt + escena WebGL en el detalle),
-**búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la Pokédex»** (chat con
-Claude); estos dos últimos opcionales (ver más abajo); **Pokémon del día** en la home; tema
-claro/oscuro con toggle, diseño responsive, ordenación configurable
+de la Pokédex, debilidades/resistencias, cría, entrenamiento, shiny, grito, formas, **cartas
+del JCC**, radar de stats — ver §8), **visuales 3D** (tarjetas holográficas con tilt + escena
+WebGL en el detalle), **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la
+Pokédex»** (chat con Claude para dudas, trucos y estrategia); estos dos últimos opcionales (ver
+más abajo); **paginación instantánea** con página en la URL, **botón volver arriba**,
+**Pokémon del día** en la home; tema claro/oscuro con toggle, diseño responsive, ordenación
+configurable
 (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
 español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
 y `prefers-reduced-motion`.
@@ -77,7 +79,7 @@ y `prefers-reduced-motion`.
 | **Tailwind CSS v4**                                         | Sistema de diseño por _tokens_ (CSS-first) con tema claro/oscuro por variables.               |
 | **Zod**                                                     | Valida las respuestas de la PokéAPI en la frontera → datos de confianza y tipados.            |
 | **nuqs**                                                    | Estado de filtros en la URL de forma tipada (compartible y preservable).                      |
-| **@tanstack/react-virtual**                                 | Virtualización del listado de 1025 tarjetas → rendimiento y scroll fluido.                    |
+| **Paginación client-side propia**                           | 60 tarjetas/página como _slice_ de la lista en memoria → instantánea, sin peticiones.         |
 | **Radix UI (Select)**                                       | Selectores accesibles (teclado, ARIA) sin reinventar la rueda.                                |
 | **framer-motion**                                           | Micro-animaciones de las barras de estadísticas y transiciones.                               |
 | **next-themes**                                             | Tema claro/oscuro sin _flash_ de hidratación.                                                 |
@@ -136,13 +138,24 @@ frente a sus evoluciones.
 - **La posición de scroll** se guarda en un módulo en memoria (`scroll-store.ts`): sobrevive a
   la navegación cliente pero **se resetea al recargar** — justo lo que pide el enunciado.
 
-### 4. Rendimiento del listado
+### 4. Rendimiento del listado: paginación instantánea
 
-- **Virtualización por ventana**: solo se montan las filas visibles (de ~1025 tarjetas), con
-  altura de fila fija para que la restauración de scroll sea exacta.
-- Columnas responsive calculadas por ancho de viewport.
-- `next/image` con carga diferida y degradación de _sprite_ ante fallos.
-- `optimizePackageImports` para `lucide-react` y `framer-motion`.
+- **Paginación client-side (60/página)**: como el índice completo ya está en memoria, cambiar
+  de página o buscar es un simple _slice_ del array filtrado — **cero peticiones, respuesta
+  inmediata**. La página vive en la URL (`?p=`), así que se **preserva al volver del detalle**
+  y se **resetea automáticamente** al cambiar cualquier filtro (un nº de página solo tiene
+  sentido respecto al conjunto sobre el que se calculó).
+- La búsqueda y los filtros operan **siempre sobre el total** (los 1025), nunca sobre la página
+  visible — la paginación no afecta a los resultados.
+- **Botón flotante «volver arriba»** (aparece al bajar) para navegar cómodamente.
+- Las tarjetas tienen alturas deterministas (cajas `aspect-square`), por lo que la restauración
+  de scroll al volver del detalle es exacta incluso antes de que carguen las imágenes.
+- `next/image` con carga diferida y degradación de _sprite_ ante fallos;
+  `optimizePackageImports` para `lucide-react` y `framer-motion`.
+
+> **Decisión:** inicialmente el listado usaba virtualización por ventana; se sustituyó por
+> paginación (mejor orientación espacial y URLs compartibles por página) sin perder inmediatez,
+> precisamente porque los datos ya viven en el cliente.
 
 ### 5. Tema y diseño
 
@@ -161,8 +174,9 @@ el cliente** (≤512px JPEG) para minimizar coste; el servidor resuelve el nombr
 índice y rellena el buscador → reutiliza toda la búsqueda evolutiva existente. Si no reconoce
 nada, lo dice con claridad.
 
-**Asistente «Pregúntale a la Pokédex»** — chat flotante que responde preguntas sobre cualquier
-Pokémon (comparativas, evoluciones, stats…). Puntos clave:
+**Asistente «Pregúntale a la Pokédex»** — chat flotante que responde **cualquier duda Pokémon**:
+datos y comparativas (fundamentados con herramientas), pero también trucos, consejos de
+estrategia y combate, crianza, capturas y curiosidades. Puntos clave:
 
 - **Grounded con _tool use_**: el modelo no inventa datos; llama a herramientas server-side
   (`buscar_pokemon`, `detalle_pokemon`) que consultan el índice local y la PokéAPI. Bucle
@@ -181,7 +195,7 @@ Para activarlo: define `ANTHROPIC_API_KEY` (y opcionalmente `CHAT_MODEL`) en tu 
 - **Tarjetas holográficas** (listado): al pasar el puntero, cada tarjeta se **inclina en 3D**
   hacia el cursor con un **reflejo holográfico** que lo sigue. Es CSS 3D + un _callback ref_
   que escribe variables CSS directamente en el nodo (sin re-render por movimiento), así que
-  sigue fluido incluso con la lista virtualizada. Respeta `prefers-reduced-motion`.
+  sigue fluido en todo el grid. Respeta `prefers-reduced-motion`.
 - **Escena 3D en el detalle** (`react-three-fiber` + `drei`): el arte del Pokémon **flota en
   3D** con un halo del color de su tipo, partículas y arrastre para inclinarlo. Es **mejora
   progresiva**: el arte estático se renderiza en SSR (rápido + SEO) y solo se «sube» a 3D en
@@ -214,7 +228,15 @@ ISR — cero peticiones extra desde el cliente):
 - **Shiny y grito**: alterna el arte normal/variocolor (también en la escena 3D) y reproduce el
   **grito** del Pokémon (audio de PokéAPI, se oculta si el navegador no soporta ogg).
 - **Otras formas**: megaevoluciones, formas regionales y variantes con su propio arte.
+- **Cartas del JCC**: escaneos reales de cartas coleccionables **en español** vía
+  [TCGdex](https://tcgdex.dev) (gratuito, sin API key; server-side con ISR; la sección se
+  oculta si no hay cartas).
 - **Navegación anterior/siguiente** con nombre y sprite del vecino de la Pokédex.
+
+> **Nota sobre veracidad:** todos los datos mostrados provienen de fuentes reales (PokéAPI y
+> TCGdex) — nada está inventado ni "hardcodeado". Cuando una fuente no tiene datos (p. ej.
+> PokéAPI no registra encuentros de Escarlata/Púrpura), la interfaz lo dice explícitamente en
+> lugar de afirmar algo falso.
 
 En la home: chips con datos del dex (1025 Pokémon, 541 familias, 9 generaciones, 18 tipos) y un
 **«Pokémon del día»** determinista por fecha (client-side, la home sigue siendo estática).
@@ -231,7 +253,7 @@ src/
 │   ├── loading / error / not-found
 │   └── globals.css             # Tokens de tema + tipos
 ├── components/
-│   ├── pokedex/                # Explorer, grid virtualizado, filtros, tarjeta…
+│   ├── pokedex/                # Explorer, grid paginado, filtros, tarjeta…
 │   ├── pokemon/                # Badge de tipo, stats, cadena evolutiva…
 │   ├── ui/                     # Select accesible (Radix)
 │   └── providers, header, footer, theme-toggle
@@ -312,7 +334,7 @@ es pequeña y arranca rápido.
 Dos planos distintos:
 
 - **Como herramienta de desarrollo**: he usado un asistente de IA (Claude) para acelerar el
-  andamiaje repetitivo, contrastar enfoques (estrategia de datos, virtualización, preservación
+  andamiaje repetitivo, contrastar enfoques (estrategia de datos, paginación, preservación
   de estado) y depurar. Todas las decisiones de arquitectura, la estructura del código y los
   _trade-offs_ descritos aquí son propios y puedo defenderlos y explicarlos en detalle.
 - **Como parte del producto**: la app integra **Claude** (API de Anthropic) en dos funciones —

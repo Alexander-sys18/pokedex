@@ -1,0 +1,13 @@
+# Run the whole app with a single command:
+#   docker compose up --build
+# Then open http://localhost:3000
+services:
+  web:
+    build: .
+    container_name: pokedex
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - POKEAPI_REVALIDATE_SECONDS=86400
+    restart: unless-stopped

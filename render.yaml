@@ -1,0 +1,14 @@
+# Render Blueprint — deploy with one click from the repo.
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: pokedex
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: POKEAPI_REVALIDATE_SECONDS
+        value: "86400"

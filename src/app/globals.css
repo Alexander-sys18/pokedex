@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (driven by next-themes) instead of prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------- Light theme
+   "Minimal premium": near-white canvas, soft borders, restrained ink accents. */
+:root {
+  --background: #f6f7f9;
+  --surface: #ffffff;
+  --surface-hover: #fbfbfd;
+  --foreground: #14151a;
+  --muted: #eef0f3;
+  --muted-foreground: #6b7280;
+  --border: #e6e8ec;
+  --border-strong: #d5d8de;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --ring: #6366f1;
+
+  --shadow-card: 0 1px 2px rgb(16 18 24 / 0.04), 0 8px 24px -12px rgb(16 18 24 / 0.12);
+  --shadow-card-hover: 0 2px 4px rgb(16 18 24 / 0.06), 0 18px 40px -16px rgb(16 18 24 / 0.22);
+  --glow-opacity: 0.14;
+}
+
+/* ----------------------------------------------------------------- Dark theme
+   "Neon premium": deep ink canvas, glassy surfaces, type-tinted glows. */
+.dark {
+  --background: #08090d;
+  --surface: rgb(255 255 255 / 0.035);
+  --surface-hover: rgb(255 255 255 / 0.06);
+  --foreground: #f4f5f8;
+  --muted: rgb(255 255 255 / 0.06);
+  --muted-foreground: #9aa1ad;
+  --border: rgb(255 255 255 / 0.09);
+  --border-strong: rgb(255 255 255 / 0.16);
+  --primary: #f4f5f8;
+  --primary-foreground: #08090d;
+  --ring: #818cf8;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 50px -20px rgb(0 0 0 / 0.7);
+  --glow-opacity: 0.5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ambient glow behind the app in dark mode. */
+.dark body {
+  background-image:
+    radial-gradient(60rem 60rem at 12% -10%, rgb(99 102 241 / 0.1), transparent 55%),
+    radial-gradient(50rem 50rem at 100% 0%, rgb(236 72 153 / 0.08), transparent 55%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-ring) 30%, transparent);
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Slim, unobtrusive scrollbar. */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+}
+
+/* Type-tinted radial aura behind Pokémon artwork. Cards set `--type` inline;
+   `--glow-opacity` scales it up in dark mode for the neon look. */
+.type-aura {
+  background: radial-gradient(
+    circle at 50% 55%,
+    color-mix(in oklab, var(--type) calc(var(--glow-opacity) * 100%), transparent),
+    transparent 70%
+  );
+}
+
+/* Neon outer glow on card hover (dark mode only). */
+.dark .poke-card:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--type) 45%, transparent),
+    0 20px 55px -20px color-mix(in oklab, var(--type) 70%, transparent);
+}
+
+/* Type-tinted wash behind the detail hero. */
+.detail-hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--type) 15%, transparent),
+    transparent 62%
+  );
+}
+.dark .detail-hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--type) 26%, transparent),
+    transparent 60%
+  );
+}

@@ -7,6 +7,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // Server-only modules (e.g. lib/pokedex/detail.ts) are unit-testable:
+      // the guard package throws outside RSC, so tests stub it out.
+      "server-only": fileURLToPath(new URL("./vitest.server-only-stub.ts", import.meta.url)),
     },
   },
   test: {

@@ -30,8 +30,9 @@ import type {
 const REVALIDATE = Number(process.env.POKEAPI_REVALIDATE_SECONDS ?? 86_400);
 const KNOWN_TYPES = new Set<string>(POKEMON_TYPES);
 
-/** Compose a compact Spanish label for how a link evolves from its parent. */
-function evolutionMethodLabel(details: EvolutionDetail[] | undefined): string | null {
+/** Compose a compact Spanish label for how a link evolves from its parent.
+ *  Exported for unit tests — this is the gnarliest formatting logic here. */
+export function evolutionMethodLabel(details: EvolutionDetail[] | undefined): string | null {
   const d = details?.[0];
   if (!d) return null;
   const trigger = d.trigger?.name ?? "level-up";
@@ -169,7 +170,7 @@ async function localizedResourceName(path: string, fallbackSlug: string): Promis
 
 /** Variety slugs need a couple of Spanish/typographic fixes on top of the
  *  generic prettifier ("eevee-gmax" → "Eevee Gigamax", not "Eevee Gmax"). */
-function prettifyVariety(slug: string): string {
+export function prettifyVariety(slug: string): string {
   return prettifyName(slug)
     .replace(/\bGmax\b/, "Gigamax")
     .replace(/\bPhd\b/, "PhD");

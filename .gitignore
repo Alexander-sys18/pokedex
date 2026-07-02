@@ -41,8 +41,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated PokÃ©dex index (rebuilt from PokÃ©API via `pnpm pokedex:build`)
-/src/data/pokedex.generated.json
+# The generated Pokedex index (src/data/pokedex.generated.json) IS committed
+# on purpose: deterministic, offline-capable builds. Refresh it with
+# `pnpm pokedex:build --force`.
 
 # Local AI-tooling workspace (not part of the app)
 .claude/

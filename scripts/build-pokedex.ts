@@ -8,8 +8,10 @@
  *   • ~549 `/evolution-chain`   → species id → family id (drives evo-aware search)
  *
  * Run with `--force` to rebuild even if the cache is fresh.
- * The output (`src/data/pokedex.generated.json`) is git-ignored and rebuilt via
- * the `predev` / `prebuild` hooks and inside the Docker image.
+ * The output (`src/data/pokedex.generated.json`) is COMMITTED on purpose:
+ * builds are deterministic and work offline (the data is effectively
+ * immutable). The `predev`/`prebuild` hooks only refresh it when it's stale,
+ * and a refresh failure falls back to the existing snapshot with a warning.
  */
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -35,6 +37,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = join(__dirname, "..", "src", "data", "pokedex.generated.json");
 const CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 const CONCURRENCY = 24;
+/** Synthetic family for species without an evolution chain: real chain ids
+ *  are small (<~600) and species ids ≤ 1025, so this base is collision-free. */
+const SYNTHETIC_FAMILY_BASE = 1_000_000;
 
 /** Map an async fn over items with a bounded number of concurrent workers. */
 async function pMap<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -128,7 +133,7 @@ async function buildPokedex(): Promise<Pokedex> {
 
     let familyId = familyById.get(id);
     if (familyId === undefined) {
-      familyId = 1_000_000 + id; // synthetic singleton family, collision-free
+      familyId = SYNTHETIC_FAMILY_BASE + id; // singleton family
       fallbackFamilies++;
     }
 
@@ -143,6 +148,15 @@ async function buildPokedex(): Promise<Pokedex> {
   return { generatedAt: new Date().toISOString(), familyCount, entries };
 }
 
+async function snapshotExists(): Promise<boolean> {
+  try {
+    await stat(OUTPUT_PATH);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const force = process.argv.includes("--force");
   if (!force && (await isCacheFresh())) {
@@ -152,7 +166,25 @@ async function main() {
 
   console.log(`Building Pokédex index from ${POKEAPI_BASE_URL}…`);
   const start = Date.now();
-  const pokedex = await buildPokedex();
+
+  let pokedex: Pokedex;
+  try {
+    pokedex = await buildPokedex();
+  } catch (error) {
+    // Never fail a build over an AUTOMATIC refresh: the committed snapshot is
+    // valid (the data is effectively immutable) — keep it and warn. An
+    // explicit --force run, however, must fail loudly rather than silently
+    // return stale data.
+    if (!force && (await snapshotExists())) {
+      console.warn(
+        "! Could not refresh the Pokédex index (PokéAPI unreachable?). " +
+          "Keeping the existing snapshot.\n",
+        error,
+      );
+      return;
+    }
+    throw error;
+  }
 
   await mkdir(dirname(OUTPUT_PATH), { recursive: true });
   await writeFile(OUTPUT_PATH, JSON.stringify(pokedex), "utf8");

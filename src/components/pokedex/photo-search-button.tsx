@@ -145,8 +145,11 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
             aria-label="Buscar Pokémon por foto"
             className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-56 rounded-xl border p-1.5 shadow-[var(--shadow-card-hover)]"
           >
-            <p className="text-muted-foreground px-2.5 pt-1.5 pb-2 text-xs font-medium">
+            <p className="text-muted-foreground px-2.5 pt-1.5 pb-1 text-xs font-medium">
               Identificar un Pokémon con IA
+            </p>
+            <p className="text-muted-foreground/80 px-2.5 pb-2 text-[0.7rem] leading-snug">
+              La foto se envía a la API de Claude solo para identificarla; no se almacena.
             </p>
             <button
               type="button"

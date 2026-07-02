@@ -32,9 +32,9 @@ de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable co
 
 ## ⚡ Arranque rápido
 
-Requisitos: **Node ≥ 20** y **pnpm** (`npm i -g pnpm`). El primer arranque descarga los datos
-de la PokéAPI y genera un índice local (~10–30 s según la conexión; las siguientes veces usa
-la caché y es instantáneo).
+Requisitos: **Node ≥ 20** y **pnpm** (`npm i -g pnpm`). El índice de datos viene commiteado
+en el repo, así que el arranque es inmediato y **no depende de la red** (se refresca solo si
+está obsoleto; `pnpm pokedex:build --force` lo regenera desde la PokéAPI).
 
 ```bash
 pnpm install
@@ -81,6 +81,15 @@ toggle, cabecera con navegación e iconos monocromos, diseño responsive, ordena
 español, estados de carga (skeletons) y de error, animaciones sobrias (medidores y entradas,
 con `prefers-reduced-motion`), accesibilidad (roles ARIA, foco visible).
 
+> **Sobre el alcance:** el núcleo de la prueba (listado, filtros, buscador evolutivo, detalle
+> y estado al volver) vive en `lib/pokedex/` + `components/pokedex/`, que **no importan nada
+> de los extras**. Los extras están aislados por diseño — rutas propias (`/comparar`,
+> `/equipo`), módulos propios (`lib/chat`, `lib/team`, `lib/tcg`), opcionales (la IA se
+> desactiva sola sin clave) y con carga diferida (three.js solo se descarga al pulsar «3D») —
+> y solo tocan el núcleo en sus **puntos de montaje explícitos** (la galería JCC y las notas
+> de Oak como secciones de la ficha, el widget de chat en el layout): eliminarlos se reduce a
+> quitar esos montajes. Existen para mostrar amplitud técnica sin ensuciar lo esencial.
+
 ---
 
 ## 🧱 Stack y por qué
@@ -99,6 +108,9 @@ con `prefers-reduced-motion`), accesibilidad (roles ARIA, foco visible).
 | **@anthropic-ai/sdk (Claude)**                              | Asistente con _tool use_ y búsqueda por foto (Claude Vision). Server-side.                    |
 | **three / @react-three/fiber / drei**                       | Escena WebGL del detalle con **modelos 3D reales (.glb)** (carga diferida solo en esa ruta).  |
 | **Vitest**                                                  | Tests unitarios de la lógica pura (búsqueda, filtros, normalización).                         |
+
+> **Convención de idiomas** (deliberada): código y comentarios en **inglés** (estándar del
+> ecosistema); UI, README y mensajes de commit en **español** (la audiencia de esta prueba).
 
 ---
 
@@ -119,7 +131,11 @@ distingue dos caminos:
   - `~549 × /evolution-chain` → id → familia evolutiva.
 
   El índice se lee en el servidor con `fs` (fuera del _bundle_ JS) y se pasa al cliente.
-  Se regenera automáticamente en los _hooks_ `predev`/`prebuild` y dentro de la imagen Docker.
+  El _snapshot_ (81 KB) está **commiteado a propósito**: los datos son inmutables en la
+  práctica, así que el _build_ es **determinista y funciona sin red** (`docker compose up
+--build` no depende de que la PokéAPI esté disponible). Los _hooks_ `predev`/`prebuild`
+  solo lo refrescan si está obsoleto, y un fallo de refresco **nunca rompe el build**: se
+  conserva el snapshot existente con un aviso. Regenerable con `pnpm pokedex:build --force`.
 
 - **Detalle** → se obtiene **en vivo desde la PokéAPI** (`/pokemon`, `/pokemon-species`,
   `/evolution-chain`) en un Server Component, con caché **ISR** (`revalidate`). Así la ficha
@@ -128,7 +144,10 @@ distingue dos caminos:
 
 > **Decisión clave:** pre-generar el índice prioriza un arranque instantáneo y fiable (nada
 > de 580 peticiones en cada _cold start_ de Render), manteniendo el detalle verdaderamente en
-> vivo. El índice es un artefacto derivado de la PokéAPI, no datos «hardcodeados».
+> vivo. El índice es un artefacto derivado de la PokéAPI, no datos «hardcodeados». Sobre el
+> «tiempo real» del enunciado: el **buscador filtra en tiempo real** al escribir y el
+> **detalle consulta la PokéAPI en vivo**; el listado sirve el índice derivado — la lectura
+> que hace viable la búsqueda evolutiva instantánea sobre 1025 Pokémon.
 
 ### 2. Búsqueda con expansión evolutiva
 
@@ -340,7 +359,7 @@ src/
 │   ├── team.ts                 # Store del equipo (localStorage)
 │   ├── url-state.ts            # Filtros en la URL (nuqs)
 │   └── scroll-store.ts         # Memoria de scroll
-└── data/pokedex.generated.json # Índice generado (git-ignored)
+└── data/pokedex.generated.json # Índice generado (commiteado: build determinista)
 
 public/icon-app.svg             # Icono PWA (maskable)
 scripts/build-pokedex.ts        # Ingesta desde la PokéAPI
@@ -425,13 +444,18 @@ es pequeña y arranca rápido.
   `urlTransform` seguro por defecto (bloquea `javascript:`). No hay `dangerouslySetInnerHTML`.
 - **Cabeceras**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
   `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` restrictiva.
+  Una **CSP estricta se omite a propósito** (documentado en `next.config.ts`): Next inyecta
+  scripts inline de arranque y exigiría un pipeline de nonces por petición — mal _trade-off_
+  para una app pública de solo lectura, sin cookies ni sesiones que robar.
 - **Imagen Docker**: multi-stage, usuario **no root**, `.dockerignore` excluye `.env*` del
   contexto y la etapa final **borra cualquier `.env`** que Next copiara al _standalone_ —
   la clave no se hornea en la imagen.
 - **Dependencias**: `pnpm audit` limpio (override de `postcss` ≥ 8.5.10 para la única
   advisoria transitiva). Sin secretos en el repositorio ni en el historial de git.
 - **Datos de usuario**: solo favoritos/equipos/chat en `localStorage`/`sessionStorage` del
-  propio navegador — no hay cuentas, cookies ni datos personales en el servidor.
+  propio navegador — no hay cuentas, cookies ni datos personales en el servidor. En la
+  búsqueda por foto, la imagen se reenvía a la API de Claude **solo para identificarla** y no
+  se almacena en ningún sitio (se avisa en la propia interfaz).
 
 ---
 

@@ -12,5 +12,6 @@ Dockerfile
 .dockerignore
 .claude
 tsconfig.tsbuildinfo
-# Always regenerate the index from PokéAPI inside the image.
-src/data/pokedex.generated.json
+# NOTE: src/data/pokedex.generated.json ships IN the context on purpose —
+# the committed snapshot makes `docker compose up --build` deterministic and
+# independent of PokéAPI availability at build time.

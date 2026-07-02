@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { z } from "zod";
 import { prettifyName } from "@/lib/utils";
 
@@ -24,8 +25,10 @@ const cardListSchema = z.array(
 export interface TcgCard {
   id: string;
   name: string;
-  /** Ready-to-render card scan URL (webp). */
+  /** Ready-to-render card scan URL (webp, low-res thumbnail). */
   imageUrl: string;
+  /** High-resolution scan (webp) for the full-screen viewer. */
+  imageUrlHigh: string;
 }
 
 async function queryCards(name: string): Promise<TcgCard[]> {
@@ -40,15 +43,21 @@ async function queryCards(name: string): Promise<TcgCard[]> {
   const cards = cardListSchema.parse(await response.json());
   return cards
     .filter((card): card is typeof card & { image: string } => Boolean(card.image))
-    .map((card) => ({ id: card.id, name: card.name, imageUrl: `${card.image}/low.webp` }));
+    .map((card) => ({
+      id: card.id,
+      name: card.name,
+      imageUrl: `${card.image}/low.webp`,
+      imageUrlHigh: `${card.image}/high.webp`,
+    }));
 }
 
 /**
  * Fetch up to {@link MAX_CARDS} Spanish card scans for a Pokémon. The TCGdex
  * name filter is a case-insensitive "contains", so multi-word slugs
  * ("mr-mime") retry with their longest word when the full name misses.
+ * Wrapped in React cache() so repeated calls within one render are deduped.
  */
-export async function getTcgCards(pokemonSlug: string): Promise<TcgCard[]> {
+export const getTcgCards = cache(async (pokemonSlug: string): Promise<TcgCard[]> => {
   try {
     const pretty = prettifyName(pokemonSlug);
     const cards = await queryCards(pretty);
@@ -59,4 +68,4 @@ export async function getTcgCards(pokemonSlug: string): Promise<TcgCard[]> {
   } catch {
     return [];
   }
-}
+});

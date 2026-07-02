@@ -97,6 +97,7 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={loading}
+        aria-busy={loading}
         aria-label="Buscar por foto"
         title="Buscar por foto"
         className={cn(

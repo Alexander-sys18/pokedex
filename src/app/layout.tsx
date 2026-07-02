@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   applicationName: "Pokédex",
   authors: [{ name: "Alexander Yánez" }],
   keywords: ["Pokédex", "Pokémon", "PokéAPI", "Next.js", "TypeScript"],
+  appleWebApp: {
+    capable: true,
+    title: "Pokédex",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
@@ -39,7 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="flex min-h-full flex-col">
         <Providers>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-5 sm:px-6 sm:py-6">
             {children}
           </main>
           <SiteFooter />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Volume2 } from "lucide-react";
+import { Loader2, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ interface CryButtonProps {
 
 /** Plays the Pokémon's cry. Hides itself if no audio is available/playable. */
 export function CryButton({ src, fallback, className }: CryButtonProps) {
+  // "loading" while the audio downloads/decodes, then "playing" until it ends.
+  const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -38,8 +40,8 @@ export function CryButton({ src, fallback, className }: CryButtonProps) {
       audio.onended = () => setPlaying(false);
       // Mid-stream failures fire "error", never "ended" — don't pulse forever.
       audio.onerror = () => setPlaying(false);
-      setPlaying(true);
       await audio.play();
+      setPlaying(true);
     } catch (error) {
       // pause() on a still-pending play() (rapid re-click, unmount) rejects
       // with AbortError — that's not a codec problem, so never treat it as
@@ -62,8 +64,10 @@ export function CryButton({ src, fallback, className }: CryButtonProps) {
     // would reject it and cascade through the fallback chain.
     if (busyRef.current) return;
     busyRef.current = true;
+    setLoading(true);
     void play(src, true).finally(() => {
       busyRef.current = false;
+      setLoading(false);
     });
   };
 
@@ -71,17 +75,24 @@ export function CryButton({ src, fallback, className }: CryButtonProps) {
     <button
       type="button"
       onClick={handleClick}
+      disabled={loading}
+      aria-busy={loading}
       aria-label="Reproducir grito"
       title="Escuchar su grito"
       className={cn(
         "border-border bg-surface/90 text-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium backdrop-blur",
         "hover:bg-surface-hover focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none",
+        "disabled:opacity-70",
         playing && "border-border-strong",
         className,
       )}
     >
-      <Volume2 className={cn("size-3.5", playing && "animate-pulse")} />
-      Grito
+      {loading ? (
+        <Loader2 className="size-3.5 animate-spin" />
+      ) : (
+        <Volume2 className={cn("size-3.5", playing && "animate-pulse")} />
+      )}
+      {loading ? "Cargando…" : "Grito"}
     </button>
   );
 }

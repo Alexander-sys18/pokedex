@@ -380,12 +380,12 @@ pnpm test
 
 Todas son opcionales (hay valores por defecto sensatos). Ver `.env.example`.
 
-| Variable                     | Por defecto                 | Descripción                                                               |
-| ---------------------------- | --------------------------- | ------------------------------------------------------------------------- |
-| `POKEAPI_BASE_URL`           | `https://pokeapi.co/api/v2` | Base de la PokéAPI.                                                       |
-| `POKEAPI_REVALIDATE_SECONDS` | `86400`                     | TTL de caché (ISR) del detalle.                                           |
-| `ANTHROPIC_API_KEY`          | _(vacío)_                   | Habilita el asistente IA; sin ella el chat no aparece. **Solo servidor.** |
-| `CHAT_MODEL`                 | `claude-opus-4-8`           | Modelo del chat (p. ej. `claude-haiku-4-5` para menor coste).             |
+| Variable                     | Por defecto                 | Descripción                                                                                   |
+| ---------------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
+| `POKEAPI_BASE_URL`           | `https://pokeapi.co/api/v2` | Base de la PokéAPI.                                                                           |
+| `POKEAPI_REVALIDATE_SECONDS` | `86400`                     | TTL de caché (ISR) del detalle.                                                               |
+| `ANTHROPIC_API_KEY`          | _(vacío)_                   | Habilita el asistente IA; sin ella el chat no aparece. **Solo servidor.**                     |
+| `CHAT_MODEL`                 | `claude-sonnet-5`           | Modelo del chat (`claude-haiku-4-5` para menor coste, `claude-opus-4-8` para máxima calidad). |
 
 ---
 

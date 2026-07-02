@@ -1,6 +1,7 @@
-/** Chat model. Defaults to Claude Opus 4.8; override for cheaper/faster tiers
- *  (e.g. CHAT_MODEL=claude-haiku-4-5 or claude-sonnet-5). */
-export const CHAT_MODEL = process.env.CHAT_MODEL ?? "claude-opus-4-8";
+/** Chat model. Defaults to Claude Sonnet 5 — more than enough for this
+ *  assistant at a fraction of the cost; override via CHAT_MODEL (e.g.
+ *  claude-haiku-4-5 for cheaper, claude-opus-4-8 for maximum quality). */
+export const CHAT_MODEL = process.env.CHAT_MODEL ?? "claude-sonnet-5";
 
 /** Streaming output cap — leaves headroom for adaptive thinking + the answer. */
 export const CHAT_MAX_TOKENS = 4096;

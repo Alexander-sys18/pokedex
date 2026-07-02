@@ -1,6 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { CHAT_MAX_STEPS, CHAT_MAX_TOKENS, CHAT_MODEL, CHAT_SYSTEM_PROMPT } from "@/lib/chat/config";
+import {
+  CHAT_EFFORT,
+  CHAT_MAX_STEPS,
+  CHAT_MAX_TOKENS,
+  CHAT_MODEL,
+  CHAT_SUPPORTS_ADAPTIVE,
+  CHAT_SYSTEM_PROMPT,
+} from "@/lib/chat/config";
 import { CHAT_TOOLS, runTool } from "@/lib/chat/tools";
 
 export const runtime = "nodejs";
@@ -84,20 +91,37 @@ export async function POST(req: Request) {
         controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
       const pokemon = new Map<number, string>();
       let producedText = false;
+      let lastSentChar = "";
 
       try {
         for (let step = 0; step < CHAT_MAX_STEPS; step++) {
+          // Text from separate loop steps (before/after a tool call) must not
+          // glue together mid-word on the client — force a paragraph break
+          // between the text of one step and the next (it becomes part of the
+          // message, which is accurate: the model produced the chunks apart).
+          let stepProducedText = false;
           const turn = client.messages.stream({
             model: CHAT_MODEL,
             max_tokens: CHAT_MAX_TOKENS,
             system: CHAT_SYSTEM_PROMPT,
             messages,
             tools: CHAT_TOOLS as unknown as Anthropic.Tool[],
+            // Adaptive thinking noticeably improves tool choice and comparisons;
+            // effort keeps the latency of a chat in check. Only sent to models
+            // that accept it (older tiers would reject the params with a 400).
+            ...(CHAT_SUPPORTS_ADAPTIVE
+              ? { thinking: { type: "adaptive" as const }, output_config: { effort: CHAT_EFFORT } }
+              : {}),
           });
 
           for await (const event of turn) {
             if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+              if (!stepProducedText && producedText && !lastSentChar.includes("\n")) {
+                send({ type: "text", text: "\n\n" });
+              }
+              stepProducedText = true;
               producedText = true;
+              if (event.delta.text.length > 0) lastSentChar = event.delta.text.slice(-1);
               send({ type: "text", text: event.delta.text });
             }
           }
@@ -105,6 +129,15 @@ export async function POST(req: Request) {
           const message = await turn.finalMessage();
           messages.push({ role: "assistant", content: message.content });
 
+          // Streamed text can't be un-sent — if the cap cut the reply short,
+          // tell the user instead of ending mid-sentence silently.
+          if (message.stop_reason === "max_tokens") {
+            send({
+              type: "text",
+              text: "\n\n_(Me he quedado sin espacio, joven entrenador — pídeme que continúe.)_",
+            });
+            break;
+          }
           if (message.stop_reason !== "tool_use") break;
 
           const toolUses = message.content.filter(

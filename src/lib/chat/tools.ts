@@ -9,6 +9,7 @@ import {
 } from "@/lib/pokedex/constants";
 import { getPokemonDetail } from "@/lib/pokedex/detail";
 import { eggGroupLabel, locationLabel, versionLabel } from "@/lib/pokedex/labels";
+import { defensiveGroups } from "@/lib/pokedex/type-chart";
 import { getPokedex } from "@/lib/pokedex";
 import type { EvolutionNode, PokemonTypeName } from "@/lib/pokedex/types";
 import { normalizeSearch, prettifyName } from "@/lib/utils";
@@ -56,6 +57,29 @@ export const CHAT_TOOLS = [
         },
       },
       required: ["nombre_o_id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "tabla_tipos",
+    description:
+      "Análisis defensivo con la tabla de tipos oficial (Gen VI+). Dados los tipos de un " +
+      "Pokémon DEFENSOR, devuelve sus debilidades (×2 y ×4), resistencias (×½ y ×¼), " +
+      "inmunidades (×0) y los mejores tipos de ataque para vencerlo. Úsalo SIEMPRE para " +
+      "preguntas de debilidades, resistencias o '¿con qué venzo a…?' — nunca lo calcules " +
+      "de memoria. Si no conoces los tipos del Pokémon, consulta antes detalle_pokemon.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        tipos: {
+          type: "array",
+          items: { type: "string", enum: [...POKEMON_TYPES] },
+          minItems: 1,
+          maxItems: 2,
+          description: "Tipo(s) del Pokémon defensor, en inglés (p. ej. ['dragon','flying']).",
+        },
+      },
+      required: ["tipos"],
       additionalProperties: false,
     },
   },
@@ -129,10 +153,12 @@ async function detallePokemon(input: Record<string, unknown>): Promise<ToolResul
     return { content: JSON.stringify({ error: `No hay datos para el id ${id}.` }), pokemon: [] };
   }
 
-  const evoluciones: string[] = [];
+  // Names + real evolution methods (level, stones, friendship…), so the model
+  // answers "¿cómo evoluciona X?" with data instead of memory.
+  const evoluciones: { nombre: string; metodo: string | null }[] = [];
   const walk = (node: EvolutionNode | null): void => {
     if (!node) return;
-    evoluciones.push(prettifyName(node.name));
+    evoluciones.push({ nombre: prettifyName(node.name), metodo: node.method });
     node.children.forEach(walk);
   };
   walk(detail.evolutionRoot);
@@ -178,11 +204,43 @@ async function detallePokemon(input: Record<string, unknown>): Promise<ToolResul
   };
 }
 
+/** Defensive matchup analysis computed from the embedded Gen VI+ type chart. */
+function tablaTipos(input: Record<string, unknown>): ToolResult {
+  const raw = Array.isArray(input.tipos) ? input.tipos : [];
+  const tipos = raw.filter(
+    (t): t is PokemonTypeName =>
+      typeof t === "string" && (POKEMON_TYPES as readonly string[]).includes(t),
+  );
+  if (tipos.length === 0) {
+    return {
+      content: JSON.stringify({
+        error: "Indica 1 o 2 tipos válidos en inglés (p. ej. ['dragon','flying']).",
+      }),
+      pokemon: [],
+    };
+  }
+
+  const groups = defensiveGroups(tipos.slice(0, 2));
+  const labels = (types: PokemonTypeName[]) => types.map((t) => TYPE_LABELS_ES[t]);
+  const result = {
+    defensor: labels(tipos.slice(0, 2)),
+    debilidades_x4: labels(groups.x4),
+    debilidades_x2: labels(groups.x2),
+    resistencias_x05: labels(groups.half),
+    resistencias_x025: labels(groups.quarter),
+    inmunidades_x0: labels(groups.zero),
+    mejores_ataques: labels([...groups.x4, ...groups.x2]),
+    nota: "Multiplicadores de daño defensivo; los mejores ataques son los ×4 primero y luego los ×2.",
+  };
+  return { content: JSON.stringify(result), pokemon: [] };
+}
+
 export async function runTool(name: string, input: unknown): Promise<ToolResult> {
   const args = (input ?? {}) as Record<string, unknown>;
   try {
     if (name === "buscar_pokemon") return await buscarPokemon(args);
     if (name === "detalle_pokemon") return await detallePokemon(args);
+    if (name === "tabla_tipos") return tablaTipos(args);
     return { content: JSON.stringify({ error: `Herramienta desconocida: ${name}` }), pokemon: [] };
   } catch (error) {
     return {

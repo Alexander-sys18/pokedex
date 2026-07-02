@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface ChatPokemon {
   id: number;
@@ -16,10 +16,38 @@ export interface ChatMessage {
 
 type Status = "idle" | "streaming";
 
+/** Conversation survives reloads (per tab); capped to what the API accepts. */
+const STORAGE_KEY = "pokedex:oak-chat";
+const MAX_STORED_MESSAGES = 24;
+
 function newId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+}
+
+function loadStoredMessages(): ChatMessage[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (m): m is ChatMessage =>
+          typeof m === "object" &&
+          m !== null &&
+          typeof (m as ChatMessage).id === "string" &&
+          ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
+          typeof (m as ChatMessage).content === "string",
+      )
+      // A reload mid-stream can leave an empty assistant stub — drop it.
+      .filter((m) => m.content.length > 0)
+      .slice(-MAX_STORED_MESSAGES);
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -27,16 +55,39 @@ function newId(): string {
  * /api/chat and reads the NDJSON event stream, appending assistant text live.
  */
 export function useChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Restored from sessionStorage, so the conversation survives a page reload
+  // (the panel is client-only — this initializer never runs during SSR).
+  const [messages, setMessages] = useState<ChatMessage[]>(loadStoredMessages);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Persist after every change (streaming included — content only grows).
+  useEffect(() => {
+    try {
+      if (messages.length === 0) {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } else {
+        sessionStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
+        );
+      }
+    } catch {
+      // Storage unavailable — the chat just won't survive a reload.
+    }
+  }, [messages]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
     setMessages([]);
     setError(null);
     setStatus("idle");
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore.
+    }
   }, []);
 
   const streamResponse = useCallback(
@@ -111,9 +162,14 @@ export function useChat() {
       const userMessage: ChatMessage = { id: newId(), role: "user", content: trimmed };
       const assistantId = newId();
 
-      // Build the request payload from prior turns + this user message.
+      // Build the request payload from prior turns + this user message. The
+      // API accepts at most 24 messages and the first must be from the user —
+      // trim old turns (and any leading assistant left by the cut) accordingly.
       setMessages((prev) => {
-        const payload = [...prev, userMessage].map(({ role, content }) => ({ role, content }));
+        const payload = [...prev, userMessage]
+          .map(({ role, content }) => ({ role, content }))
+          .slice(-MAX_STORED_MESSAGES);
+        while (payload.length > 0 && payload[0]!.role === "assistant") payload.shift();
         void streamResponse(payload, assistantId);
         return [...prev, userMessage, { id: assistantId, role: "assistant", content: "" }];
       });

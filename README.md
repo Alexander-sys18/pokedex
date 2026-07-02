@@ -4,7 +4,8 @@ Aplicación web construida con **Next.js 16 (App Router) + TypeScript** que mues
 **1025 Pokémon** de las generaciones I–IX a partir de la [PokéAPI](https://pokeapi.co).
 Permite buscar por nombre **en tiempo real** (incluyendo la cadena evolutiva), filtrar por
 tipo y generación, y consultar la ficha completa de cada Pokémon con sus estadísticas y
-evoluciones.
+evoluciones. Además: **comparar dos Pokémon** lado a lado, **armar un equipo** con análisis
+de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable como PWA**.
 
 > Prueba técnica para **BinPar**. El objetivo era una solución moderna, bien estructurada,
 > con tipado sólido y decisiones técnicas justificadas. Este README explica el _qué_ y,
@@ -45,28 +46,31 @@ docker compose up --build   # http://localhost:3000
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Listado ordenado por id**                  | Grid paginado (60/página, **instantáneo**: la paginación es un _slice_ en memoria); orden por nº ascendente por defecto.                                                 |
 | **Nombre, generación y tipos**               | Cada tarjeta muestra nº de Pokédex, nombre, generación y badges de tipo.                                                                                                 |
-| **Filtro por tipo**                          | Selector accesible con los 18 tipos.                                                                                                                                     |
+| **Filtro por tipo**                          | Selector accesible con los 18 tipos, **más un segundo selector de tipo** para filtrar tipados duales (p. ej. Fuego + Volador).                                          |
 | **Filtro por generación**                    | Selector con las 9 generaciones y su región.                                                                                                                             |
-| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes, sin recargar.                                                                                                                              |
+| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes (input local instantáneo + **debounce de 300 ms** antes de propagar el filtro), sin recargar.                                              |
 | **Búsqueda incluyendo evoluciones**          | Buscar `pikachu` muestra también `pichu` y `raichu` (familia evolutiva completa).                                                                                        |
 | **Página de detalle**                        | Nombre, imagen (3D/shiny), generación, tipos, estadísticas (barras + radar) y evoluciones — más debilidades, localizaciones, cría, entrenamiento, curiosidades y formas. |
-| **Evoluciones con imágenes y navegación**    | Cadena evolutiva con ramas (p. ej. Eevee); cada nodo enlaza a su ficha.                                                                                                  |
+| **Evoluciones con imágenes y navegación**    | Cadena evolutiva con ramas (p. ej. Eevee) y el **método real de cada evolución** (nivel, piedra, amistad, intercambio…) bajo cada flecha; cada nodo enlaza a su ficha.   |
 | **Pokémon actual identificado en su cadena** | El nodo actual se resalta con su color de tipo y la etiqueta «Actual».                                                                                                   |
 | **Estado preservado al volver**              | Filtros, texto de búsqueda, orden y posición de scroll se mantienen al volver del detalle.                                                                               |
 | **No es necesario preservar tras recargar**  | El scroll vive en memoria (se resetea al recargar); los filtros van en la URL.                                                                                           |
 | **Entrega**                                  | Repo público + Docker (`docker compose up`) + despliegue en Render.                                                                                                      |
 
-**Extras** que he añadido: **ficha enciclopédica** (dónde encontrarlo por juego, curiosidades
-de la Pokédex, debilidades/resistencias, cría, entrenamiento, shiny, grito, formas, **cartas
-del JCC**, radar de stats — ver §8), **visuales 3D** (tarjetas holográficas con tilt + escena
-WebGL en el detalle), **búsqueda por foto** (Claude Vision) y **asistente IA «Pregúntale a la
-Pokédex»** (chat con Claude para dudas, trucos y estrategia); estos dos últimos opcionales (ver
-más abajo); **paginación instantánea** con página en la URL, **botón volver arriba**,
-**Pokémon del día** en la home; tema claro/oscuro con toggle, diseño responsive, ordenación
-configurable
+**Extras** que he añadido: **comparador** de dos Pokémon lado a lado y **constructor de equipo**
+con análisis de tipos (ver §9), **favoritos** persistentes, **PWA instalable**, **ficha
+enciclopédica** (dónde encontrarlo por juego, curiosidades de la Pokédex, debilidades/resistencias
+explicadas, cría, entrenamiento, shiny, **sprite animado**, grito, formas, **cartas del JCC** con
+**visor a pantalla completa**, radar de stats — ver §8), **visuales 3D** (tarjetas holográficas
+con tilt + **modelos 3D reales giratorios** en el detalle, con fallback), **búsqueda por foto**
+(Claude Vision) y **asistente «Profesor Oak»** (avatar oficial, **voz** por Web Speech,
+**chat persistente** entre recargas y respuestas fundamentadas con herramientas); estos dos
+últimos opcionales (ver más abajo); **paginación instantánea** con
+página en la URL, **botón volver arriba**, **Pokémon del día** en la home; tema claro/oscuro con
+toggle, cabecera con navegación e iconos monocromos, diseño responsive, ordenación configurable
 (nº / nombre), navegación anterior/siguiente en el detalle, descripción de la Pokédex en
-español, estados de carga (skeletons) y de error, accesibilidad (roles ARIA, foco visible)
-y `prefers-reduced-motion`.
+español, estados de carga (skeletons) y de error, animaciones sobrias (medidores y entradas,
+con `prefers-reduced-motion`), accesibilidad (roles ARIA, foco visible).
 
 ---
 
@@ -81,10 +85,10 @@ y `prefers-reduced-motion`.
 | **nuqs**                                                    | Estado de filtros en la URL de forma tipada (compartible y preservable).                      |
 | **Paginación client-side propia**                           | 60 tarjetas/página como _slice_ de la lista en memoria → instantánea, sin peticiones.         |
 | **Radix UI (Select)**                                       | Selectores accesibles (teclado, ARIA) sin reinventar la rueda.                                |
-| **framer-motion**                                           | Micro-animaciones de las barras de estadísticas y transiciones.                               |
+| **Animaciones CSS propias**                                 | Medidores, entradas y micro-feedback sin librería de animación (menos _bundle_).              |
 | **next-themes**                                             | Tema claro/oscuro sin _flash_ de hidratación.                                                 |
 | **@anthropic-ai/sdk (Claude)**                              | Asistente con _tool use_ y búsqueda por foto (Claude Vision). Server-side.                    |
-| **three / @react-three/fiber / drei**                       | Escena WebGL del detalle (carga diferida solo en esa ruta).                                   |
+| **three / @react-three/fiber / drei**                       | Escena WebGL del detalle con **modelos 3D reales (.glb)** (carga diferida solo en esa ruta).  |
 | **Vitest + Testing Library**                                | Tests unitarios de la lógica pura (búsqueda, filtros, normalización).                         |
 
 ---
@@ -174,34 +178,47 @@ el cliente** (≤512px JPEG) para minimizar coste; el servidor resuelve el nombr
 índice y rellena el buscador → reutiliza toda la búsqueda evolutiva existente. Si no reconoce
 nada, lo dice con claridad.
 
-**Asistente «Pregúntale a la Pokédex»** — chat flotante que responde **cualquier duda Pokémon**:
-datos y comparativas (fundamentados con herramientas), pero también trucos, consejos de
-estrategia y combate, crianza, capturas y curiosidades. Puntos clave:
+**Asistente «Profesor Oak»** — chat flotante con el **Profesor Oak en persona** (su sprite
+oficial como avatar, animado mientras «habla») que responde **cualquier duda Pokémon**: datos
+y comparativas (fundamentados con herramientas), pero también trucos, estrategia, crianza,
+capturas y curiosidades. Puntos clave:
 
 - **Grounded con _tool use_**: el modelo no inventa datos; llama a herramientas server-side
-  (`buscar_pokemon`, `detalle_pokemon`) que consultan el índice local y la PokéAPI. Bucle
-  agéntico manual con **streaming** (`src/app/api/chat/route.ts`).
+  (`buscar_pokemon`, `detalle_pokemon` y `tabla_tipos` — esta última calcula debilidades con
+  la tabla de tipos embebida, nunca de memoria). Bucle agéntico manual con **streaming** y
+  **razonamiento adaptativo** (`src/app/api/chat/route.ts`).
+- **Voz**: el Profesor puede **leer sus respuestas en voz alta** (Web Speech API del navegador,
+  sin claves ni red), con toggle persistente y botón de releer por mensaje. El selector
+  **prioriza las voces neuronales** del sistema (p. ej. las «Natural» de Edge o las de Google
+  en Chrome) y prefiere español latino cuando está disponible.
+- **Persistencia**: la conversación **sobrevive a recargas de página** (`sessionStorage`,
+  por pestaña) y se puede reiniciar con un clic.
 - **Seguridad**: la `ANTHROPIC_API_KEY` vive **solo en el servidor** (route handler); nunca
   llega al cliente. Rate limiting básico en memoria y validación de entrada con Zod.
 - **Degradación elegante**: si no hay clave, el endpoint responde `enabled: false` y el widget
   **no se muestra** — la app funciona igual sin IA.
-- **UX**: respuestas en streaming (NDJSON), y _chips_ clicables de los Pokémon mencionados que
-  enlazan a su ficha.
+- **UX**: respuestas en streaming (NDJSON) con Markdown robusto (tablas, código; el HTML crudo
+  se descarta), _chips_ clicables de los Pokémon mencionados, y aviso si la respuesta se corta
+  por el límite de tokens.
 
 Para activarlo: define `ANTHROPIC_API_KEY` (y opcionalmente `CHAT_MODEL`) en tu `.env`.
 
-### 7. Visuales 3D (holográfico + WebGL)
+### 7. Visuales 3D (holográfico + WebGL + modelos reales)
 
 - **Tarjetas holográficas** (listado): al pasar el puntero, cada tarjeta se **inclina en 3D**
   hacia el cursor con un **reflejo holográfico** que lo sigue. Es CSS 3D + un _callback ref_
   que escribe variables CSS directamente en el nodo (sin re-render por movimiento), así que
   sigue fluido en todo el grid. Respeta `prefers-reduced-motion`.
-- **Escena 3D en el detalle** (`react-three-fiber` + `drei`): el arte del Pokémon **flota en
-  3D** con un halo del color de su tipo, partículas y arrastre para inclinarlo. Es **mejora
-  progresiva**: el arte estático se renderiza en SSR (rápido + SEO) y solo se «sube» a 3D en
-  clientes con WebGL y sin _reduced-motion_. `three.js` se carga de forma **diferida** (solo en
-  la ruta de detalle, `dynamic(ssr:false)`), no infla el _bundle_ del listado, y va envuelto en
-  un _error boundary_ que cae al arte estático si algo falla.
+- **Modelos 3D reales en el detalle, bajo demanda** (`react-three-fiber` + `drei`): el arte
+  oficial es la vista principal (SSR, es la identidad visual del Pokémon) y un botón **«3D»**
+  monta el **modelo .glb real** (comprimido con Draco, ~97 % de la Pokédex, vía el CDN
+  jsDelivr desde los assets de la comunidad
+  [Pokémon 3D API](https://github.com/Pokemon-3D-api/assets)) para **girarlo 360°**; también
+  en su variante **shiny**. Al ser _opt-in_, ni `three.js` ni el modelo se descargan hasta
+  pulsar el botón (que solo aparece con WebGL y sin `prefers-reduced-motion`). El modelo se
+  normaliza (escala/centro por _bounding box_, sin mutar la escena cacheada de `useGLTF`)
+  para que Joltik y Wailord llenen el escenario igual; si el `.glb` no existe, un _error
+  boundary_ cae al plano de arte flotante con la textura oficial.
 
 ### 8. Ficha «enciclopédica»: todo lo que la PokéAPI sabe de cada Pokémon
 
@@ -213,9 +230,16 @@ ISR — cero peticiones extra desde el cliente):
   lo explica (evolución / intercambio / eventos).
 - **Curiosidades de la Pokédex**: entradas de distintas ediciones (deduplicadas, en español con
   _fallback_ a inglés) citadas con su juego de origen.
+- **Notas del Profesor Oak**: cada ficha abre con un párrafo de **prosa viva compuesta
+  determinísticamente a partir de los datos reales** (stat estrella, nivel competitivo del
+  total base, aviso de debilidades ×4 o inmunidades, dificultad de captura, rarezas físicas)
+  — personalidad sin coste de IA ni clave, y 100 % veraz por construcción.
 - **Debilidades y resistencias**: la tabla de tipos Gen VI+ va **embebida como dato** y se
-  calculan los multiplicadores (×4, ×2, ×½, ×¼, ×0) del tipado — con **tests unitarios** que
-  fijan matchups conocidos (p. ej. Charizard ×4 Roca, inmune a Tierra).
+  calculan los multiplicadores (×4, ×2, ×½, ×¼, ×0) del tipado, **explicando en lenguaje llano
+  qué significa cada uno** y por qué un tipado dual produce ×4/×¼ (los multiplicadores se
+  multiplican entre sí) — con **tests unitarios** que fijan matchups conocidos y verifican la
+  integridad de las 18×18 combinaciones (p. ej. Charizard ×4 Roca, inmune a Tierra). Incluye
+  además la **cobertura ofensiva** del propio tipado (a qué tipos golpea ×2).
 - **Entrenamiento**: ratio de captura y felicidad base (con medidor /255), ritmo de
   crecimiento, experiencia base y puntos de esfuerzo (EVs).
 - **Cría**: grupos huevo, ciclos de eclosión (≈ pasos) y **ratio de género** con barra ♂/♀
@@ -238,8 +262,37 @@ ISR — cero peticiones extra desde el cliente):
 > PokéAPI no registra encuentros de Escarlata/Púrpura), la interfaz lo dice explícitamente en
 > lugar de afirmar algo falso.
 
-En la home: chips con datos del dex (1025 Pokémon, 541 familias, 9 generaciones, 18 tipos) y un
-**«Pokémon del día»** determinista por fecha (client-side, la home sigue siendo estática).
+En la home: un **hero** con gradiente tintado por el tipo del día, chips con datos del dex
+(1025 Pokémon, 541 familias, 9 generaciones, 18 tipos), CTAs y un **«Pokémon del día»**
+determinista por fecha como ancla visual — calculado **en el servidor** con ISR horario
+(`revalidate = 3600`), así la home sigue sirviéndose estática. Incluye un botón
+**«Sorpréndeme»** que navega a una ficha aleatoria.
+
+### 9. Comparador, equipo, favoritos y PWA
+
+- **Comparador** (`/comparar?a=&b=`): compara dos Pokémon lado a lado con un lenguaje visual
+  inequívoco — **verde gana / rojo pierde / gris empate** en cada barra, deltas numéricos por
+  stat, y una tarjeta de **veredicto** (duelos de stats ganados, total base y **ventaja de
+  tipos** calculada con la tabla embebida). Está **dirigido por la URL**: la selección vive en
+  los _query params_, así que el servidor re-renderiza con datos reales (ISR) en cada cambio y
+  **la comparación es compartible por enlace**. La selección es **optimista** (el elegido
+  aparece al instante con un _spinner_ mientras carga) y el estado vacío ofrece duelos clásicos
+  de un toque. El selector es un _combobox_ con búsqueda sobre el índice.
+- **Constructor de equipo** (`/equipo`): arma un equipo de hasta 6 y obtén un **análisis de
+  tipos** calculado en el cliente con la misma tabla embebida — **debilidades compartidas**
+  (alerta si 3+ miembros son débiles al mismo tipo), **resistencias** del conjunto y
+  **cobertura ofensiva** (cuántos de los 18 tipos golpea super efectivo y qué huecos quedan).
+  Se guarda en `localStorage`.
+- **Favoritos**: marca cualquier Pokémon con el corazón (en la tarjeta o en el detalle); se
+  **persisten en `localStorage`** y se sincronizan entre pestañas. Un botón en los filtros
+  muestra **solo tus favoritos**. Implementado con `useSyncExternalStore` (hidratación sin
+  _mismatch_: el _snapshot_ de servidor es siempre vacío).
+- **Visor de imágenes (lightbox)**: el arte del Pokémon y las **cartas del JCC** se abren a
+  pantalla completa (alta resolución), con cierre por _Escape_, clic en el fondo o botón, y
+  bloqueo del _scroll_ del cuerpo. Se monta vía _portal_ para escapar cualquier recorte.
+- **PWA instalable**: `manifest.webmanifest` (generado por `app/manifest.ts`), icono _maskable_,
+  `theme-color` por esquema de color y metadatos de _apple-web-app_ → la app se puede instalar
+  en el dispositivo y abrir en modo _standalone_.
 
 ---
 
@@ -250,20 +303,29 @@ src/
 ├── app/                        # Rutas (App Router)
 │   ├── page.tsx                # Home (Server Component → índice)
 │   ├── pokemon/[id]/page.tsx   # Detalle (fetch en vivo con ISR)
+│   ├── comparar/page.tsx       # Comparador (dirigido por ?a=&b=, ISR)
+│   ├── equipo/page.tsx         # Constructor de equipo (índice → cliente)
+│   ├── manifest.ts             # Web App Manifest (PWA)
+│   ├── api/{chat,vision}/      # Route handlers de IA (Claude)
 │   ├── loading / error / not-found
-│   └── globals.css             # Tokens de tema + tipos
+│   └── globals.css             # Tokens de tema + tipos + animaciones
 ├── components/
-│   ├── pokedex/                # Explorer, grid paginado, filtros, tarjeta…
-│   ├── pokemon/                # Badge de tipo, stats, cadena evolutiva…
-│   ├── ui/                     # Select accesible (Radix)
+│   ├── pokedex/                # Explorer, grid paginado, filtros, tarjeta, picker…
+│   ├── pokemon/                # Badge de tipo, stats, cadena evolutiva, showcase…
+│   ├── compare/                # Controles + vista del comparador
+│   ├── team/                   # Constructor de equipo + análisis de tipos
+│   ├── ui/                     # Select accesible (Radix), lightbox
 │   └── providers, header, footer, theme-toggle
 ├── lib/
 │   ├── pokeapi/                # Cliente con reintentos + schemas Zod
-│   ├── pokedex/                # Dominio: tipos, búsqueda (pura), detalle, constantes…
+│   ├── pokedex/                # Dominio: tipos, búsqueda (pura), tabla de tipos, detalle…
+│   ├── favorites.ts            # Store de favoritos (useSyncExternalStore + localStorage)
+│   ├── team.ts                 # Store del equipo (localStorage)
 │   ├── url-state.ts            # Filtros en la URL (nuqs)
 │   └── scroll-store.ts         # Memoria de scroll
 └── data/pokedex.generated.json # Índice generado (git-ignored)
 
+public/icon-app.svg             # Icono PWA (maskable)
 scripts/build-pokedex.ts        # Ingesta desde la PokéAPI
 ```
 
@@ -345,5 +407,7 @@ Dos planos distintos:
 
 ## 📄 Créditos
 
-Datos de la [PokéAPI](https://pokeapi.co). Pokémon © Nintendo / Game Freak. Proyecto con
-fines educativos y de evaluación técnica.
+Datos de la [PokéAPI](https://pokeapi.co). Cartas del JCC vía [TCGdex](https://tcgdex.dev).
+Modelos 3D optimizados de [Pokémon 3D API](https://github.com/Pokemon-3D-api/assets) (vía
+jsDelivr). Sprite del Profesor Oak vía [Pokémon Showdown](https://play.pokemonshowdown.com).
+Pokémon © Nintendo / Game Freak. Proyecto con fines educativos y de evaluación técnica.

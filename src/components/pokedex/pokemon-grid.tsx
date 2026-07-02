@@ -23,9 +23,20 @@ export function PokemonGrid({ entries, directMatchIds }: PokemonGridProps) {
   useEffect(() => {
     const saved = getListScroll();
     if (saved > 0) window.scrollTo(0, saved);
-    const onScroll = () => saveListScroll(window.scrollY);
+    // rAF-throttled: one store write per frame instead of one per scroll event.
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        saveListScroll(window.scrollY);
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (

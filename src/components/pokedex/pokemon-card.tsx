@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { TypeBadge } from "@/components/pokemon/type-badge";
+import { memo } from "react";
+import { FavoriteButton } from "@/components/pokemon/favorite-button";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
+import { TypeBadge } from "@/components/pokemon/type-badge";
+import { LinkPending } from "@/components/ui/link-pending";
 import { primaryTypeColor } from "@/lib/pokedex/colors";
 import { generationShortLabel } from "@/lib/pokedex/constants";
 import type { PokedexEntry } from "@/lib/pokedex/types";
@@ -19,7 +22,16 @@ interface PokemonCardProps {
 
 const CARD_IMAGE_SIZES = "(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 200px";
 
-export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) {
+/**
+ * Memoized: a favorite toggle re-renders only its own heart (per-id store
+ * subscription), and pagination/filter updates skip cards whose props are
+ * unchanged.
+ */
+export const PokemonCard = memo(function PokemonCard({
+  entry,
+  priority,
+  highlighted,
+}: PokemonCardProps) {
   const color = primaryTypeColor(entry.types);
   const tiltRef = useTilt<HTMLAnchorElement>();
 
@@ -27,6 +39,7 @@ export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) 
     <Link
       ref={tiltRef}
       href={`/pokemon/${entry.id}`}
+      prefetch={false}
       aria-label={`${prettifyName(entry.name)}, ${formatDexNumber(entry.id)}`}
       className={cn(
         "poke-card group border-border bg-surface relative flex flex-col rounded-2xl border p-3",
@@ -41,13 +54,18 @@ export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) 
         ...(highlighted ? { outline: `2px solid ${color}`, outlineOffset: "2px" } : {}),
       }}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground font-mono text-xs tabular-nums">
-          {formatDexNumber(entry.id)}
+      {/* Dex number + generation on the left; the heart owns the right corner,
+          so nothing ever overlaps. */}
+      <div className="flex min-h-9 items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="text-muted-foreground font-mono text-xs tabular-nums">
+            {formatDexNumber(entry.id)}
+          </span>
+          <span className="bg-muted text-muted-foreground truncate rounded-full px-2 py-0.5 text-[0.65rem] font-medium">
+            {generationShortLabel(entry.generation)}
+          </span>
         </span>
-        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[0.65rem] font-medium">
-          {generationShortLabel(entry.generation)}
-        </span>
+        <FavoriteButton id={entry.id} name={prettifyName(entry.name)} className="z-10 shrink-0" />
       </div>
 
       <div className="relative mx-auto aspect-square w-full max-w-[180px]">
@@ -76,6 +94,9 @@ export function PokemonCard({ entry, priority, highlighted }: PokemonCardProps) 
         className="poke-card__sheen pointer-events-none absolute inset-0 rounded-2xl"
         aria-hidden
       />
+
+      {/* "Loading" veil while the detail page is being fetched. */}
+      <LinkPending />
     </Link>
   );
-}
+});

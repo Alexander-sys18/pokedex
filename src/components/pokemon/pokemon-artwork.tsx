@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { homeArtwork, officialArtwork, pixelSprite, shinyArtwork } from "@/lib/pokedex/image";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ interface PokemonArtworkProps {
  * Render inside a positioned, sized container. When toggling `variant`, pass a
  * changing `key` from the parent so the fallback index resets.
  */
-export function PokemonArtwork({
+export const PokemonArtwork = memo(function PokemonArtwork({
   id,
   alt,
   sizes,
@@ -48,4 +48,4 @@ export function PokemonArtwork({
       className={cn("object-contain", className)}
     />
   );
-}
+});

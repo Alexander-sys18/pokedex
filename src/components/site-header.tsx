@@ -9,9 +9,23 @@ import { ThemeToggle } from "./theme-toggle";
 function PokeballMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden fill="none">
-      <circle cx="12" cy="12" r="10" className="fill-surface" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M2 12h6a4 4 0 0 1 8 0h6" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="2.4" className="fill-background" stroke="currentColor" strokeWidth="1.6" />
+      <defs>
+        <linearGradient id="pokemark-red" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f87171" />
+          <stop offset="1" stopColor="#dc2626" />
+        </linearGradient>
+      </defs>
+      {/* White base + red gradient dome */}
+      <path d="M2 12a10 10 0 0 0 20 0Z" fill="#f8fafc" />
+      <path d="M2 12a10 10 0 0 1 20 0Z" fill="url(#pokemark-red)" />
+      {/* Glass highlight */}
+      <ellipse cx="8.6" cy="6.4" rx="2.6" ry="1.3" fill="#fff" opacity="0.45" transform="rotate(-20 8.6 6.4)" />
+      {/* Belt + button (red core = brand signature) */}
+      <path d="M2 12h20" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.4" fill="#f8fafc" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="1.3" fill="#ef4444" />
+      {/* Outline */}
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   );
 }

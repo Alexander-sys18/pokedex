@@ -27,7 +27,7 @@ export function OakAvatar({ size = 36, talking = false, className }: OakAvatarPr
       aria-hidden
       className={cn(
         "border-border relative grid shrink-0 place-items-center overflow-hidden rounded-full border",
-        "bg-gradient-to-b from-amber-500/15 via-transparent to-emerald-500/15",
+        "from-warm/15 bg-gradient-to-b to-transparent",
         talking && "oak-talking",
         className,
       )}

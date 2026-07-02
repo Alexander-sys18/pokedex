@@ -41,14 +41,14 @@ export function FavoriteButton({ id, name, variant = "chip", className }: Favori
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
           "active:scale-95",
           isFavorite
-            ? "border-rose-500/40 bg-rose-500/10 text-rose-500 hover:bg-rose-500/15"
+            ? "border-brand/40 bg-brand/10 text-brand hover:bg-brand/15"
             : "border-border bg-surface/90 text-foreground hover:bg-surface-hover",
           className,
         )}
       >
         <Heart
           key={heartKey}
-          className={cn("animate-heart-pop size-3.5", isFavorite && "fill-rose-500")}
+          className={cn("animate-heart-pop size-3.5", isFavorite && "fill-brand")}
         />
         {isFavorite ? "En favoritos" : "Favorito"}
       </button>
@@ -70,14 +70,14 @@ export function FavoriteButton({ id, name, variant = "chip", className }: Favori
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         "active:scale-90",
         isFavorite
-          ? "border-rose-500/40 bg-rose-500/15 text-rose-500"
-          : "border-border bg-surface/95 text-muted-foreground hover:border-rose-400/50 hover:text-rose-500",
+          ? "border-brand/40 bg-brand/15 text-brand"
+          : "border-border bg-surface/95 text-muted-foreground hover:border-brand/50 hover:text-brand",
         className,
       )}
     >
       <Heart
         key={heartKey}
-        className={cn("animate-heart-pop size-[18px]", isFavorite && "fill-rose-500")}
+        className={cn("animate-heart-pop size-[18px]", isFavorite && "fill-brand")}
       />
     </button>
   );

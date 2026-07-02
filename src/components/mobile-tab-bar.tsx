@@ -60,7 +60,7 @@ export function MobileTabBar() {
               <span
                 className={cn(
                   "grid h-7 w-12 place-items-center rounded-full transition-colors",
-                  active && "bg-red-500/15 text-red-500",
+                  active && "bg-brand/15 text-brand",
                 )}
               >
                 <Icon className="size-[18px]" />

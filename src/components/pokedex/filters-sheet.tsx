@@ -98,7 +98,7 @@ function OptionChip({
       className={cn(
         "inline-flex h-9 items-center justify-center rounded-lg border px-2 text-xs transition-colors",
         active
-          ? "border-blue-500/50 bg-blue-500/15 font-semibold text-blue-600 dark:text-blue-300"
+          ? "border-action/50 bg-action/15 font-semibold text-blue-600 dark:text-blue-300"
           : "border-border bg-surface text-muted-foreground hover:text-foreground font-medium",
       )}
     >
@@ -187,7 +187,7 @@ export function FiltersSheet({ state, resultsCount, className }: FiltersSheetPro
           "inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors",
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
           activeCount > 0
-            ? "border-blue-500/40 bg-blue-500/10 font-semibold text-blue-600 dark:text-blue-300"
+            ? "border-action/40 bg-action/10 font-semibold text-blue-600 dark:text-blue-300"
             : "border-border bg-surface text-foreground hover:bg-surface-hover",
           className,
         )}
@@ -195,7 +195,7 @@ export function FiltersSheet({ state, resultsCount, className }: FiltersSheetPro
         <SlidersHorizontal className="size-4" />
         Filtros
         {activeCount > 0 ? (
-          <span className="rounded-full bg-blue-500 px-1.5 text-[0.7rem] font-semibold text-white">
+          <span className="bg-action rounded-full px-1.5 text-[0.7rem] font-semibold text-white">
             {activeCount}
           </span>
         ) : null}
@@ -321,7 +321,7 @@ export function FiltersSheet({ state, resultsCount, className }: FiltersSheetPro
                   <button
                     type="button"
                     onClick={close}
-                    className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-orange-600 px-4 text-sm font-semibold text-white shadow-md shadow-red-500/25 transition-opacity [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:opacity-90"
+                    className="from-brand-deep to-flame shadow-brand/25 inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-gradient-to-r px-4 text-sm font-semibold text-white shadow-md transition-opacity [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:opacity-90"
                   >
                     Ver {resultsCount} Pokémon
                   </button>

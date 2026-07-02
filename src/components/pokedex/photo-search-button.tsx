@@ -115,8 +115,8 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
         title="Buscar por foto"
         className={cn(
           "inline-flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold",
-          "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-300",
-          "hover:bg-red-500/20 focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none",
+          "border-brand/40 bg-brand/10 text-brand-deep dark:text-red-300",
+          "hover:bg-brand/20 focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none",
           "disabled:opacity-60",
         )}
       >
@@ -151,7 +151,7 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
               }}
               className="text-foreground hover:bg-muted flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors"
             >
-              <Camera className="size-4 text-red-500" />
+              <Camera className="text-brand size-4" />
               Hacer una foto
             </button>
             <button
@@ -163,7 +163,7 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
               }}
               className="text-foreground hover:bg-muted flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors"
             >
-              <ImagePlus className="size-4 text-red-500" />
+              <ImagePlus className="text-brand size-4" />
               Subir de la galería
             </button>
           </div>

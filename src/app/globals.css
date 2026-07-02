@@ -63,6 +63,21 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-ring: var(--ring);
 
+  /* ------------------------------------------------- Brand palette (tokens)
+     The whole UI accents from these five roles — add no other accent hues.
+     Type colors (fire, water…) are DATA, not UI accents, and live in colors.ts.
+     - brand:   Pokéball red — primary actions, active nav, favorites.
+     - flame:   warm end of the primary CTA gradient (brand-deep → flame).
+     - action:  Pokémon-logo blue — selected filters, focus, info accents.
+     - warm:    amber — small warm touches (star of the day, sunny theme).
+     - success: green — ONLY semantic (wins, coverage, applied). */
+  --color-brand: #ef4444;
+  --color-brand-deep: #dc2626;
+  --color-flame: #ea580c;
+  --color-action: #3b82f6;
+  --color-warm: #f59e0b;
+  --color-success: #10b981;
+
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
@@ -390,6 +405,12 @@ body {
   animation-name: splash-draw;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: both;
+}
+
+/* Color fills fade in after the line drawing traces the shape. */
+.splash [data-fill] {
+  opacity: 0;
+  animation: fade-in 0.3s ease-out both;
 }
 
 .splash .splash-dot {

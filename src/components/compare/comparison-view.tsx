@@ -14,11 +14,11 @@ const numberFormat = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 }
 
 /* Win/lose/tie palette — the user-facing convention across the whole page:
    green = wins that row, red = loses it, gray = tied. */
-const WIN_BAR = "#10b981"; // emerald-500
-const LOSE_BAR = "#f43f5e"; // rose-500
+const WIN_BAR = "#10b981"; // --color-success
+const LOSE_BAR = "#ef4444"; // --color-brand (semantic red)
 const TIE_BAR = "#94a3b8"; // slate-400
 const WIN_TEXT = "text-emerald-600 dark:text-emerald-400";
-const LOSE_TEXT = "text-rose-600 dark:text-rose-400";
+const LOSE_TEXT = "text-red-600 dark:text-red-400";
 
 function statValue(detail: PokemonDetail, name: string): number {
   return detail.stats.find((stat) => stat.name === name)?.base ?? 0;
@@ -394,7 +394,7 @@ function TypeAdvantageLine({
         className={cn(
           "shrink-0 rounded-md px-1.5 py-0.5 font-mono text-xs font-bold",
           wins && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-          loses && "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+          loses && "bg-red-500/15 text-red-600 dark:text-red-400",
           !wins && !loses && "bg-muted text-muted-foreground",
         )}
         title={`Su mejor ataque es de tipo ${TYPE_LABELS_ES[offense.type]}`}

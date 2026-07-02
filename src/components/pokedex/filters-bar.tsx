@@ -76,15 +76,15 @@ function FavoritesToggle({
         "inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         favoritesOnly
-          ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
+          ? "border-brand/40 bg-brand/10 text-brand"
           : "border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground",
         className,
       )}
     >
-      <Heart className={cn("size-3.5", favoritesOnly && "fill-rose-500")} />
+      <Heart className={cn("size-3.5", favoritesOnly && "fill-brand")} />
       Favoritos
       {favoritesCount > 0 ? (
-        <span className="rounded-full bg-rose-500/15 px-1.5 text-[0.7rem] font-semibold text-rose-500">
+        <span className="bg-brand/15 text-brand rounded-full px-1.5 text-[0.7rem] font-semibold">
           {favoritesCount}
         </span>
       ) : null}

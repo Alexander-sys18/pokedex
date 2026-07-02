@@ -41,28 +41,13 @@ function PokeballWatermark({ className }: { className?: string }) {
 export function PokedexHero({ featured, facts }: PokedexHeroProps) {
   const color = primaryTypeColor(featured.types);
 
-  // Each fact gets its own color from the Pokémon palette (red/blue/amber/green).
+  // Sober, uniform chips: the color of this hero comes from the featured
+  // Pokémon (type tint + artwork), not from a rainbow of chip tints.
   const factChips = [
-    {
-      icon: LayoutGrid,
-      label: `${facts.pokemon} Pokémon`,
-      tone: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-300",
-    },
-    {
-      icon: Network,
-      label: `${facts.families} familias evolutivas`,
-      tone: "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-300",
-    },
-    {
-      icon: Layers,
-      label: `${facts.generations} generaciones`,
-      tone: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300",
-    },
-    {
-      icon: Tag,
-      label: `${facts.types} tipos`,
-      tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
-    },
+    { icon: LayoutGrid, label: `${facts.pokemon} Pokémon` },
+    { icon: Network, label: `${facts.families} familias evolutivas` },
+    { icon: Layers, label: `${facts.generations} generaciones` },
+    { icon: Tag, label: `${facts.types} tipos` },
   ];
 
   return (
@@ -88,12 +73,12 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {factChips.map(({ icon: Icon, label, tone }) => (
+            {factChips.map(({ icon: Icon, label }) => (
               <span
                 key={label}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur ${tone}`}
+                className="border-border bg-surface/70 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur"
               >
-                <Icon className="size-3.5" aria-hidden />
+                <Icon className="text-brand size-3.5" aria-hidden />
                 {label}
               </span>
             ))}
@@ -104,7 +89,7 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           <div className="mt-1 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Link
               href="/comparar"
-              className="focus-visible:ring-ring col-span-2 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 px-4 text-sm font-medium text-white shadow-md shadow-red-500/25 transition-opacity [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
+              className="focus-visible:ring-ring from-brand-deep to-flame shadow-brand/25 col-span-2 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-sm font-medium text-white shadow-md transition-opacity [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
             >
               <GitCompareArrows className="size-4" />
               Comparar Pokémon
@@ -131,7 +116,7 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           className="group focus-visible:ring-ring relative mx-auto flex w-full max-w-72 flex-col items-center gap-1.5 rounded-3xl text-center focus-visible:ring-2 focus-visible:outline-none md:mx-0 md:w-72"
         >
           <span className="border-border bg-surface/70 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur">
-            <Star className="size-3.5 text-amber-500" aria-hidden />
+            <Star className="text-warm size-3.5" aria-hidden />
             Pokémon del día
           </span>
 

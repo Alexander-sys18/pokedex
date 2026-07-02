@@ -15,7 +15,7 @@ export default async function TeamPage() {
   return (
     <div className="flex flex-col gap-5">
       <section
-        className="hero-panel border-border relative overflow-hidden rounded-3xl border p-5 sm:p-6"
+        className="hero-panel border-border relative overflow-hidden rounded-3xl border p-4 sm:p-6"
         style={{ ["--type" as string]: "#ef4444" }}
       >
         <h1 className="text-foreground flex items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl">

@@ -35,7 +35,8 @@ export function ChatWidget() {
           onClick={() => setOpen(true)}
           aria-label="Hablar con el Profesor Oak"
           className={cn(
-            "fixed right-4 bottom-4 z-50 inline-flex items-center gap-2.5 rounded-full py-2 pr-4 pl-2 sm:right-6 sm:bottom-6",
+            // Mobile clears the tab bar (h-16 + safe area); desktop keeps the corner.
+            "fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 inline-flex items-center gap-2.5 rounded-full py-2 pr-4 pl-2 sm:right-6 sm:bottom-6",
             "bg-foreground text-background shadow-lg transition-transform hover:scale-105",
             "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
           )}

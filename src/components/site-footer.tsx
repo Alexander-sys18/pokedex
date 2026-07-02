@@ -1,6 +1,7 @@
 export function SiteFooter() {
   return (
-    <footer className="border-border border-t">
+    // pb-16 on mobile: keep the footer text above the fixed bottom tab bar.
+    <footer className="border-border border-t pb-16 sm:pb-0">
       <div className="text-muted-foreground mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-center text-xs sm:flex-row sm:px-6 sm:text-left">
         <p>
           Datos de{" "}

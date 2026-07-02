@@ -113,7 +113,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
 
       {/* Hero */}
       <section
-        className="detail-hero border-border relative overflow-hidden rounded-3xl border p-6 sm:p-8"
+        className="detail-hero border-border relative overflow-hidden rounded-3xl border p-4 sm:p-8"
         style={{ ["--type" as string]: accent }}
       >
         {/* Its own artwork, blown up and blurred, as an ambient backdrop. */}
@@ -225,7 +225,9 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         <Panel title="Estadísticas base">
           <div className="grid items-center gap-6 xl:grid-cols-[1fr_auto]">
             <StatBars stats={detail.stats} total={detail.statTotal} accent={accent} />
-            <div className="hidden w-[240px] xl:block">
+            {/* The hexagonal radar deserves every screen — stacked and
+                centered on mobile, beside the bars on wide viewports. */}
+            <div className="mx-auto w-full max-w-[220px] xl:mx-0 xl:w-[240px] xl:max-w-none">
               <StatRadar stats={detail.stats} accent={accent} />
             </div>
           </div>
@@ -441,7 +443,7 @@ function CardsSkeleton() {
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+    <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
       <h2 className="text-foreground mb-4 text-lg font-semibold">{title}</h2>
       {children}
     </section>
@@ -647,9 +649,9 @@ function DexNavLink({
         width={28}
         height={28}
         unoptimized
-        className="hidden [image-rendering:pixelated] sm:block"
+        className="size-6 [image-rendering:pixelated] sm:size-7"
       />
-      <span className="hidden max-w-24 truncate text-xs font-medium sm:block">
+      <span className="max-w-14 truncate text-xs font-medium sm:max-w-24">
         {prettifyName(entry.name)}
       </span>
       {direction === "next" ? <Icon className="size-5" /> : null}

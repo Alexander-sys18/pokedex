@@ -41,11 +41,28 @@ function PokeballWatermark({ className }: { className?: string }) {
 export function PokedexHero({ featured, facts }: PokedexHeroProps) {
   const color = primaryTypeColor(featured.types);
 
+  // Each fact gets its own color — the hero should feel alive, not gray.
   const factChips = [
-    { icon: LayoutGrid, label: `${facts.pokemon} Pokémon` },
-    { icon: Network, label: `${facts.families} familias evolutivas` },
-    { icon: Layers, label: `${facts.generations} generaciones` },
-    { icon: Tag, label: `${facts.types} tipos` },
+    {
+      icon: LayoutGrid,
+      label: `${facts.pokemon} Pokémon`,
+      tone: "border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300",
+    },
+    {
+      icon: Network,
+      label: `${facts.families} familias evolutivas`,
+      tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+    },
+    {
+      icon: Layers,
+      label: `${facts.generations} generaciones`,
+      tone: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300",
+    },
+    {
+      icon: Tag,
+      label: `${facts.types} tipos`,
+      tone: "border-pink-500/30 bg-pink-500/10 text-pink-600 dark:text-pink-300",
+    },
   ];
 
   return (
@@ -55,7 +72,7 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
     >
       <PokeballWatermark className="text-foreground pointer-events-none absolute -right-14 -bottom-20 size-64 rotate-12 opacity-[0.05] sm:size-80" />
 
-      <div className="relative grid gap-6 p-6 sm:p-8 md:grid-cols-[1fr_auto] md:items-center md:gap-10">
+      <div className="relative grid gap-5 p-4 sm:p-6 md:grid-cols-[1fr_auto] md:items-center md:gap-10 md:p-8">
         <div className="flex max-w-2xl flex-col gap-4">
           <span className="border-border bg-surface/70 text-muted-foreground w-fit rounded-full border px-3 py-1 text-xs font-medium backdrop-blur">
             Pokédex Nacional · Generaciones I–IX
@@ -71,10 +88,10 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {factChips.map(({ icon: Icon, label }) => (
+            {factChips.map(({ icon: Icon, label, tone }) => (
               <span
                 key={label}
-                className="border-border bg-surface/70 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur"
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur ${tone}`}
               >
                 <Icon className="size-3.5" aria-hidden />
                 {label}
@@ -85,11 +102,11 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Link
               href="/comparar"
-              className="bg-foreground text-background hover:opacity-90 focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-medium transition-opacity focus-visible:ring-2 focus-visible:outline-none"
+              className="focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 text-sm font-medium text-white shadow-md shadow-indigo-500/25 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
             >
               <GitCompareArrows className="size-4" />
               Comparar Pokémon
-              <LinkPending mode="inline" className="text-background" />
+              <LinkPending mode="inline" className="text-white" />
             </Link>
             <Link
               href="/equipo"
@@ -113,7 +130,7 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
             Pokémon del día
           </span>
 
-          <div className="relative aspect-square w-full max-w-44">
+          <div className="oak-float relative aspect-square w-full max-w-44">
             <div className="type-aura absolute inset-0 rounded-full" aria-hidden />
             <PokemonArtwork
               id={featured.id}

@@ -39,8 +39,8 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+    <header className="border-border bg-background/80 sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
         <Link
           href="/"
           className="group focus-visible:ring-ring flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:ring-2 focus-visible:outline-none"
@@ -52,7 +52,8 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1 overflow-x-auto">
+        {/* On phones the bottom tab bar takes over navigation. */}
+        <nav className="hidden items-center gap-1 sm:flex">
           {NAV.map(({ href, label, icon: Icon, isActive }) => {
             const active = isActive(pathname);
             return (

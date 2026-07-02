@@ -67,8 +67,11 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-label="Profesor Oak — asistente de la Pokédex"
       className={cn(
-        "fixed right-4 bottom-4 z-50 flex flex-col sm:right-6 sm:bottom-6",
-        "h-[min(34rem,calc(100dvh-2rem))] w-[min(26rem,calc(100vw-2rem))]",
+        // Mobile: near-fullscreen bottom sheet (iOS safe-area aware);
+        // desktop: floating panel in the corner.
+        "fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-50 flex flex-col",
+        "h-[min(38rem,calc(100dvh-4.5rem))] sm:h-[min(34rem,calc(100dvh-2rem))]",
+        "sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[min(26rem,calc(100vw-2rem))]",
         "border-border bg-popover overflow-hidden rounded-2xl border shadow-[var(--shadow-card-hover)]",
       )}
     >

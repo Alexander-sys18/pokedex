@@ -23,7 +23,8 @@ export function ScrollTopButton() {
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       className={cn(
-        "fixed bottom-4 left-4 z-40 grid size-11 place-items-center rounded-full sm:bottom-6 sm:left-6",
+        // Mobile clears the tab bar (h-16 + safe area); desktop keeps the corner.
+        "fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 z-40 grid size-11 place-items-center rounded-full sm:bottom-6 sm:left-6",
         "border-border bg-surface/90 text-foreground border shadow-lg backdrop-blur",
         "hover:bg-surface-hover focus-visible:ring-ring transition-all focus-visible:ring-2 focus-visible:outline-none",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0",

@@ -83,7 +83,14 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Ambient glow behind the app in dark mode. */
+/* Ambient color wash behind the app — subtle in light, neon in dark. */
+body {
+  background-image:
+    radial-gradient(42rem 26rem at 88% -12%, rgb(99 102 241 / 0.07), transparent 60%),
+    radial-gradient(38rem 22rem at -12% 18%, rgb(16 185 129 / 0.05), transparent 60%);
+  background-attachment: fixed;
+}
+
 .dark body {
   background-image:
     radial-gradient(60rem 60rem at 12% -10%, rgb(99 102 241 / 0.1), transparent 55%),
@@ -324,4 +331,77 @@ body {
     ),
     radial-gradient(32rem 18rem at -12% 115%, rgb(99 102 241 / 0.12), transparent 60%),
     var(--surface);
+}
+
+/* A living aurora that drifts slowly inside the hero panels. */
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      32% 42% at 28% 32%,
+      color-mix(in oklab, var(--type, #6366f1) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(30% 40% at 72% 62%, rgb(99 102 241 / 0.12), transparent 70%);
+  animation: aurora-drift 16s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-4%, -3%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) rotate(5deg);
+  }
+}
+
+/* ------------------------------------------------------------- splash
+   Startup Pokéball: strokes draw themselves in (pathLength-normalized
+   dashes), the red arrives last, the ball pops, the overlay fades. With
+   prefers-reduced-motion everything collapses to the final (hidden) state. */
+.splash {
+  animation: splash-exit 0.4s ease-in 1.3s both;
+}
+
+.splash svg {
+  animation: splash-pop 0.28s ease-out 1.08s both;
+}
+
+.splash [data-draw] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation-name: splash-draw;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+.splash .splash-dot {
+  opacity: 0;
+  animation: fade-in 0.18s ease-out both;
+}
+
+@keyframes splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes splash-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  55% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes splash-exit {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

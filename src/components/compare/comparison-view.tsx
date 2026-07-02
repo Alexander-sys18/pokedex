@@ -98,14 +98,14 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
         <PokemonHeader detail={b} accent={accentB} />
         <span
           aria-hidden
-          className="border-border bg-popover text-muted-foreground absolute top-1/2 left-1/2 hidden size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-xs font-black shadow-[var(--shadow-card)] sm:grid"
+          className="border-border bg-popover text-muted-foreground absolute top-1/2 left-1/2 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[0.65rem] font-black shadow-[var(--shadow-card)] sm:size-10 sm:text-xs"
         >
           VS
         </span>
       </div>
 
       {/* Verdict */}
-      <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+      <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-foreground text-lg font-semibold">Veredicto</h2>
           <span
@@ -174,7 +174,7 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
       </section>
 
       {/* Stats — facing bars, winner in green / loser in red */}
-      <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+      <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-foreground text-lg font-semibold">Estadísticas base</h2>
           <p className="text-muted-foreground text-xs">
@@ -186,7 +186,7 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
           {duels.map(({ statName, va, vb }, index) => (
             <div
               key={statName}
-              className="grid grid-cols-[2.5rem_1fr_6.5rem_1fr_2.5rem] items-center gap-2"
+              className="grid grid-cols-[2rem_1fr_4.75rem_1fr_2rem] items-center gap-1.5 sm:grid-cols-[2.5rem_1fr_6.5rem_1fr_2.5rem] sm:gap-2"
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <span
@@ -239,7 +239,7 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
           ))}
 
           {/* Totals */}
-          <div className="border-border mt-1 grid grid-cols-[1fr_6.5rem_1fr] items-center gap-2 border-t pt-3">
+          <div className="border-border mt-1 grid grid-cols-[1fr_4.75rem_1fr] items-center gap-1.5 border-t pt-3 sm:grid-cols-[1fr_6.5rem_1fr] sm:gap-2">
             <span
               className={cn(
                 "text-right font-mono text-base font-bold tabular-nums",
@@ -265,7 +265,7 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
       </section>
 
       {/* Key attributes */}
-      <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+      <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
         <h2 className="text-foreground mb-4 text-lg font-semibold">Atributos</h2>
         <div className="divide-border flex flex-col divide-y">
           <AttrRow
@@ -305,11 +305,11 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
 
       {/* Defensive matchups */}
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+        <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
           <h3 className="text-foreground mb-3 text-base font-semibold">{nameA} · debilidades</h3>
           <TypeEffectiveness types={a.types} />
         </section>
-        <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+        <section className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
           <h3 className="text-foreground mb-3 text-base font-semibold">{nameB} · debilidades</h3>
           <TypeEffectiveness types={b.types} />
         </section>

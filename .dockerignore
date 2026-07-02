@@ -10,5 +10,7 @@ npm-debug.log*
 README.md
 Dockerfile
 .dockerignore
+.claude
+tsconfig.tsbuildinfo
 # Always regenerate the index from PokéAPI inside the image.
 src/data/pokedex.generated.json

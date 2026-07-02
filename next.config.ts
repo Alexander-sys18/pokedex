@@ -41,6 +41,24 @@ const nextConfig: NextConfig = {
     // Smaller client bundles: only the icons actually used are pulled in.
     optimizePackageImports: ["lucide-react"],
   },
+
+  // Baseline security headers for every response. A strict CSP is skipped on
+  // purpose: Next injects inline bootstrap scripts and would need a per-request
+  // nonce pipeline — poor trade-off for a public, read-only app with no
+  // cookies/sessions to steal.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -3,3 +3,7 @@ allowBuilds:
   unrs-resolver: true
   esbuild: true
   "@tailwindcss/oxide": true
+
+# Patch the transitive postcss advisory (GHSA-qx2v-qp2m-jg93) until Next bumps it.
+overrides:
+  postcss: '>=8.5.10'

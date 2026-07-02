@@ -399,6 +399,33 @@ es pequeña y arranca rápido.
 
 ---
 
+## 🔐 Seguridad
+
+- **La clave de Anthropic nunca sale del servidor**: solo la leen los _route handlers_
+  (`/api/chat`, `/api/vision`, `/api/team`) desde `process.env`; el navegador solo habla con
+  nuestros endpoints. Sin clave, cada función de IA se desactiva sola (`enabled: false`).
+- **Anti-abuso de coste**: _guard_ de **mismo origen** en los tres POST (un sitio de terceros
+  no puede quemar tokens a través del navegador de un visitante) + **rate limiting** por IP
+  en memoria (30/20/10 peticiones por 5 min según ruta; suficiente para esta escala — con
+  varias réplicas se migraría a Redis/Upstash).
+- **Validación en la frontera**: todas las entradas pasan por **Zod** (tamaños máximos, tipos
+  MIME de imagen permitidos por regex, límites de mensajes) y las respuestas del modelo se
+  validan también (salida estructurada del armador de equipos re-verificada contra el índice).
+- **XSS**: el Markdown del chat se renderiza con `react-markdown` (**sin** `rehype-raw`,
+  con `skipHtml`): el HTML crudo no se ejecuta ni se muestra, y los enlaces pasan por el
+  `urlTransform` seguro por defecto (bloquea `javascript:`). No hay `dangerouslySetInnerHTML`.
+- **Cabeceras**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` restrictiva.
+- **Imagen Docker**: multi-stage, usuario **no root**, `.dockerignore` excluye `.env*` del
+  contexto y la etapa final **borra cualquier `.env`** que Next copiara al _standalone_ —
+  la clave no se hornea en la imagen.
+- **Dependencias**: `pnpm audit` limpio (override de `postcss` ≥ 8.5.10 para la única
+  advisoria transitiva). Sin secretos en el repositorio ni en el historial de git.
+- **Datos de usuario**: solo favoritos/equipos/chat en `localStorage`/`sessionStorage` del
+  propio navegador — no hay cuentas, cookies ni datos personales en el servidor.
+
+---
+
 ## 🤖 Uso de IA
 
 Dos planos distintos:

@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { clientIp, createRateLimiter, crossOriginResponse, isSameOrigin } from "@/lib/api/guard";
 import { CHAT_MODEL } from "@/lib/chat/config";
 import { getPokedex } from "@/lib/pokedex";
 import { normalizeSearch, prettifyName } from "@/lib/utils";
@@ -13,21 +14,7 @@ const bodySchema = z.object({
 
 const DATA_URL_RE = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/;
 
-// Best-effort in-memory rate limit (per instance).
-const RATE_WINDOW_MS = 5 * 60 * 1000;
-const RATE_MAX = 20;
-const hits = new Map<string, number[]>();
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_MAX) {
-    hits.set(ip, recent);
-    return true;
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-  return false;
-}
+const isRateLimited = createRateLimiter(20, 5 * 60 * 1000);
 
 /** Resolve a PokéAPI-style name to an index entry. */
 async function resolveByName(name: string): Promise<{ id: number; name: string } | null> {
@@ -58,9 +45,10 @@ export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: "La búsqueda por foto no está configurada." }, { status: 503 });
   }
+  // Cross-site browsers can't burn our tokens through a visitor.
+  if (!isSameOrigin(req)) return crossOriginResponse();
 
-  const ip = (req.headers.get("x-forwarded-for") ?? "local").split(",")[0]!.trim();
-  if (isRateLimited(ip)) {
+  if (isRateLimited(clientIp(req))) {
     return Response.json(
       { error: "Demasiadas fotos seguidas. Espera un momento." },
       { status: 429 },

@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { clientIp, createRateLimiter, crossOriginResponse, isSameOrigin } from "@/lib/api/guard";
 import { CHAT_EFFORT, CHAT_MODEL, CHAT_SUPPORTS_ADAPTIVE } from "@/lib/chat/config";
 import { resolveId } from "@/lib/chat/tools";
 import { getPokedex } from "@/lib/pokedex";
@@ -69,22 +70,7 @@ Reglas:
 - Prefiere formas finales de evolución salvo petición contraria. Nada de megas/gigamax/formas regionales: solo la forma base de la Pokédex nacional.
 - Las razones y la explicación van en español, breves y con tu tono cercano de investigador.`;
 
-// Best-effort in-memory rate limit (per instance; resets on restart).
-const RATE_WINDOW_MS = 5 * 60 * 1000;
-const RATE_MAX = 10;
-const hits = new Map<string, number[]>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_MAX) {
-    hits.set(ip, recent);
-    return true;
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-  return false;
-}
+const isRateLimited = createRateLimiter(10, 5 * 60 * 1000);
 
 /** Capability probe used by the client to decide whether to show the panel. */
 export function GET() {
@@ -99,8 +85,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const ip = (req.headers.get("x-forwarded-for") ?? "local").split(",")[0]!.trim();
-  if (isRateLimited(ip)) {
+  // Cross-site browsers can't burn our tokens through a visitor.
+  if (!isSameOrigin(req)) return crossOriginResponse();
+
+  if (isRateLimited(clientIp(req))) {
     return Response.json(
       { error: "Demasiadas propuestas seguidas. Espera un momento." },
       { status: 429 },

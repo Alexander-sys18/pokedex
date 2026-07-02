@@ -31,6 +31,10 @@ RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Belt & braces: Next copies .env files into the standalone output when they
+# exist at build time. .dockerignore already keeps them out of the context —
+# this guarantees no env file ever ships in the image regardless.
+RUN rm -f ./.env ./.env.*
 # The generated index is read at runtime with fs (see src/lib/pokedex/index.ts).
 COPY --from=builder --chown=nextjs:nodejs /app/src/data/pokedex.generated.json ./src/data/pokedex.generated.json
 

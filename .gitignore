@@ -42,3 +42,6 @@ next-env.d.ts
 
 # generated Pokédex index (rebuilt from PokéAPI via `pnpm pokedex:build`)
 /src/data/pokedex.generated.json
+
+# Local AI-tooling workspace (not part of the app)
+.claude/

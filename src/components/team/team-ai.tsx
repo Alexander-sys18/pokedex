@@ -169,7 +169,10 @@ export function OakTeamAssistant({ entries }: { entries: PokedexEntry[] }) {
           </div>
 
           {loading ? (
-            <p role="status" className="text-muted-foreground mt-3 inline-flex items-center gap-2 text-xs">
+            <p
+              role="status"
+              className="text-muted-foreground mt-3 inline-flex items-center gap-2 text-xs"
+            >
               <Loader2 className="size-3.5 animate-spin" aria-hidden />
               El Profesor está estudiando combinaciones de tipos…
             </p>

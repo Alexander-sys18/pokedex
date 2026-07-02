@@ -1,4 +1,13 @@
-import { ArrowRight, GitCompareArrows, Layers, LayoutGrid, Network, Star, Swords, Tag } from "lucide-react";
+import {
+  ArrowRight,
+  GitCompareArrows,
+  Layers,
+  LayoutGrid,
+  Network,
+  Star,
+  Swords,
+  Tag,
+} from "lucide-react";
 import Link from "next/link";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
 import { TypeBadge } from "@/components/pokemon/type-badge";

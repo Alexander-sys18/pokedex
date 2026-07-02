@@ -99,7 +99,13 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
         className="hidden"
         onChange={onFileChosen}
       />
-      <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={onFileChosen} />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onFileChosen}
+      />
       <button
         type="button"
         onClick={() => {

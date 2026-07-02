@@ -17,7 +17,6 @@ import {
 import { normalizeSearch, prettifyName } from "@/lib/utils";
 import { POKEMON_TYPES, STAT_ORDER, TYPE_LABELS_ES } from "./constants";
 import { evolutionItemLabel, locationLabel, VERSION_ORDER } from "./labels";
-import type { PokemonTypeName as TypeName } from "./types";
 import type {
   EvolutionNode,
   FlavorEntry,
@@ -52,7 +51,9 @@ function evolutionMethodLabel(details: EvolutionDetail[] | undefined): string | 
     if (d.min_affection != null) parts.push("Cariño alto");
     if (d.min_beauty != null) parts.push("Belleza alta");
     if (d.known_move_type)
-      parts.push(`mov. de tipo ${TYPE_LABELS_ES[d.known_move_type.name as TypeName] ?? prettifyName(d.known_move_type.name)}`);
+      parts.push(
+        `mov. de tipo ${TYPE_LABELS_ES[d.known_move_type.name as PokemonTypeName] ?? prettifyName(d.known_move_type.name)}`,
+      );
     else if (d.known_move) parts.push(`sabiendo ${prettifyName(d.known_move.name)}`);
     if (d.held_item) parts.push(`equipando ${evolutionItemLabel(d.held_item.name)}`);
     if (d.location) parts.push(`en ${locationLabel(d.location.name)}`);

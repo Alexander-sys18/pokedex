@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpDown, Heart, Layers, RotateCcw, Sparkles, Tag } from "lucide-react";
+import { useState } from "react";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { typeColor } from "@/lib/pokedex/colors";
 import {
@@ -93,14 +94,32 @@ function FavoritesToggle({
 }
 
 export function FiltersBar({ state, favoritesCount, resultsCount }: FiltersBarProps) {
-  const { filters, favoritesOnly, setQuery, setType, setType2, setGeneration, setSort, setFavoritesOnly, reset } =
-    state;
+  const {
+    filters,
+    favoritesOnly,
+    setQuery,
+    setType,
+    setType2,
+    setGeneration,
+    setSort,
+    setFavoritesOnly,
+    reset,
+  } = state;
   const showReset = hasActiveFilters(filters) || favoritesOnly || filters.sort !== "dex-asc";
+
+  // Remount the search input on reset: if the user hits "Limpiar" while a
+  // debounce is still pending, the remount discards both the local text and
+  // the pending timer (otherwise the stale query would re-apply after reset).
+  const [resetNonce, setResetNonce] = useState(0);
+  const handleReset = () => {
+    setResetNonce((nonce) => nonce + 1);
+    reset();
+  };
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <SearchInput value={filters.query} onChange={setQuery} />
+        <SearchInput key={resetNonce} value={filters.query} onChange={setQuery} />
         <PhotoSearchButton onIdentified={setQuery} />
       </div>
 
@@ -116,7 +135,7 @@ export function FiltersBar({ state, favoritesCount, resultsCount }: FiltersBarPr
         {showReset ? (
           <button
             type="button"
-            onClick={reset}
+            onClick={handleReset}
             aria-label="Limpiar filtros y búsqueda"
             title="Limpiar filtros y búsqueda"
             className="border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground focus-visible:ring-ring grid size-10 shrink-0 place-items-center rounded-xl border transition-colors focus-visible:ring-2 focus-visible:outline-none"
@@ -168,7 +187,7 @@ export function FiltersBar({ state, favoritesCount, resultsCount }: FiltersBarPr
         {showReset ? (
           <button
             type="button"
-            onClick={reset}
+            onClick={handleReset}
             className="border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground focus-visible:ring-ring inline-flex h-10 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <RotateCcw className="size-3.5" />

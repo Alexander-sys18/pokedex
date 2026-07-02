@@ -30,7 +30,8 @@ const PROPOSAL_JSON_SCHEMA = {
     name: { type: "string", description: "Nombre corto y con gancho para el equipo, en español." },
     explanation: {
       type: "string",
-      description: "2-3 frases en español explicando la estrategia del equipo, en tono Profesor Oak.",
+      description:
+        "2-3 frases en español explicando la estrategia del equipo, en tono Profesor Oak.",
     },
     team_size: {
       type: "integer",
@@ -98,7 +99,8 @@ async function collectMembers(
   for (const member of proposed) {
     if (members.length >= target) return;
     const id = await resolveId(member.pokemon);
-    const entry = (id !== null ? byId.get(id) : undefined) ?? fuzzyFindEntry(member.pokemon, pokedex.entries);
+    const entry =
+      (id !== null ? byId.get(id) : undefined) ?? fuzzyFindEntry(member.pokemon, pokedex.entries);
     if (!entry) {
       unresolved.push(member.pokemon);
       continue;
@@ -119,9 +121,7 @@ function fillFromPool(
   seen: Set<number>,
   members: { id: number; name: string; reason: string }[],
 ): void {
-  const teamTypes = new Set(
-    members.flatMap((m) => byId.get(m.id)?.types ?? []),
-  );
+  const teamTypes = new Set(members.flatMap((m) => byId.get(m.id)?.types ?? []));
   const pool = FALLBACK_POOL.map((id) => byId.get(id)).filter(
     (e): e is PokedexEntry => Boolean(e) && !seen.has(e!.id),
   );

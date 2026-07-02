@@ -79,19 +79,17 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
   };
 
   const filtersActive = hasActiveFilters(filters) || favoritesOnly;
+  // Only claim "includes the evolutionary chain" when a text search actually
+  // expanded the results — a type/generation filter alone never does.
   const evolutionsIncluded =
-    hasActiveFilters(filters) && !favoritesOnly && results.length > directMatchIds.size;
+    filters.query.trim().length > 0 && !favoritesOnly && results.length > directMatchIds.size;
   const rangeStart = results.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, results.length);
 
   return (
     // scroll-mt clears the sticky header when we scrollIntoView this anchor.
     <div ref={rootRef} className="flex scroll-mt-20 flex-col gap-5">
-      <FiltersBar
-        state={state}
-        favoritesCount={favoriteIds.length}
-        resultsCount={results.length}
-      />
+      <FiltersBar state={state} favoritesCount={favoriteIds.length} resultsCount={results.length} />
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-muted-foreground text-sm">

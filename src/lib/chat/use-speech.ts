@@ -59,9 +59,7 @@ function pickSpanishVoice(): SpeechSynthesisVoice | null {
  * and a reactive `speaking` flag so the avatar can animate while he talks.
  */
 export function useSpeech() {
-  const [supported] = useState(
-    () => typeof window !== "undefined" && "speechSynthesis" in window,
-  );
+  const [supported] = useState(() => typeof window !== "undefined" && "speechSynthesis" in window);
   const [enabled, setEnabledState] = useState(() => {
     if (typeof window === "undefined") return false;
     try {

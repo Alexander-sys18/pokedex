@@ -55,7 +55,9 @@ export function professorNotes(detail: PokemonDetail): string {
         `Capturarlo es una gesta (ratio ${detail.captureRate}/255): lleva tus mejores Poké Balls y mucha paciencia.`,
       );
     } else if (detail.captureRate <= 45) {
-      sentences.push(`No se dejará atrapar a la primera: su ratio de captura es ${detail.captureRate}/255.`);
+      sentences.push(
+        `No se dejará atrapar a la primera: su ratio de captura es ${detail.captureRate}/255.`,
+      );
     } else if (detail.captureRate >= 200) {
       sentences.push(
         `Con un ratio de captura de ${detail.captureRate}/255, se unirá a tu equipo casi sin resistirse.`,
@@ -73,11 +75,15 @@ export function professorNotes(detail: PokemonDetail): string {
       `Con sus ${detail.weightKilograms.toLocaleString("es-ES")} kg es de los auténticos pesos pesados de la Pokédex.`,
     );
   } else if (detail.heightMeters <= 0.3) {
-    sentences.push(`Y con apenas ${detail.heightMeters.toLocaleString("es-ES")} m, ¡cabría en la palma de tu mano!`);
+    sentences.push(
+      `Y con apenas ${detail.heightMeters.toLocaleString("es-ES")} m, ¡cabría en la palma de tu mano!`,
+    );
   } else if (detail.isBaby) {
     sentences.push(`Es un Pokémon bebé: críalo con mimo y te acompañará toda la aventura.`);
   } else if (detail.habitat) {
-    sentences.push(`Si quieres verlo en libertad, busca en su hábitat natural: ${habitatLabel(detail.habitat).toLowerCase()}.`);
+    sentences.push(
+      `Si quieres verlo en libertad, busca en su hábitat natural: ${habitatLabel(detail.habitat).toLowerCase()}.`,
+    );
   }
 
   return sentences.join(" ");

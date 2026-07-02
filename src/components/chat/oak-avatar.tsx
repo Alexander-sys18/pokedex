@@ -44,7 +44,7 @@ export function OakAvatar({ size = 36, talking = false, className }: OakAvatarPr
           unoptimized
           onError={() => setFailed(true)}
           // Zoom towards the head of the full-body 80×80 sprite.
-          className="scale-[1.9] translate-y-[30%] object-contain [image-rendering:pixelated]"
+          className="translate-y-[30%] scale-[1.9] object-contain [image-rendering:pixelated]"
         />
       )}
     </span>

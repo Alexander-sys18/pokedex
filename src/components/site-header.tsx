@@ -19,7 +19,15 @@ function PokeballMark({ className }: { className?: string }) {
       <path d="M2 12a10 10 0 0 0 20 0Z" fill="#f8fafc" />
       <path d="M2 12a10 10 0 0 1 20 0Z" fill="url(#pokemark-red)" />
       {/* Glass highlight */}
-      <ellipse cx="8.6" cy="6.4" rx="2.6" ry="1.3" fill="#fff" opacity="0.45" transform="rotate(-20 8.6 6.4)" />
+      <ellipse
+        cx="8.6"
+        cy="6.4"
+        rx="2.6"
+        ry="1.3"
+        fill="#fff"
+        opacity="0.45"
+        transform="rotate(-20 8.6 6.4)"
+      />
       {/* Belt + button (red core = brand signature) */}
       <path d="M2 12h20" stroke="currentColor" strokeWidth="2" />
       <circle cx="12" cy="12" r="3.4" fill="#f8fafc" stroke="currentColor" strokeWidth="1.8" />

@@ -1,4 +1,5 @@
 import "server-only";
+import type Anthropic from "@anthropic-ai/sdk";
 import { primaryTypeColor } from "@/lib/pokedex/colors";
 import {
   GENERATION_REGIONS,
@@ -83,7 +84,9 @@ export const CHAT_TOOLS = [
       additionalProperties: false,
     },
   },
-] as const;
+  // satisfies: the schema shape is checked against the SDK's Tool type at the
+  // definition, so callers can pass CHAT_TOOLS to the API without casts.
+] as const satisfies readonly Anthropic.Tool[];
 
 export interface ToolResult {
   content: string;

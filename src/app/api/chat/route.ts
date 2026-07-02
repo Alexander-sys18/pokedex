@@ -92,7 +92,7 @@ export async function POST(req: Request) {
             max_tokens: CHAT_MAX_TOKENS,
             system: CHAT_SYSTEM_PROMPT,
             messages,
-            tools: CHAT_TOOLS as unknown as Anthropic.Tool[],
+            tools: [...CHAT_TOOLS],
             // Adaptive thinking noticeably improves tool choice and comparisons;
             // effort keeps the latency of a chat in check. Only sent to models
             // that accept it (older tiers would reject the params with a 400).

@@ -139,9 +139,8 @@ export function TypeEffectiveness({
       ) : null}
 
       <div className="border-border/60 text-muted-foreground mt-auto border-t pt-3 text-xs leading-relaxed">
-        La escala de daño va de ×0 (inmune) a ×4 (doblemente débil), pasando por ×¼, ×½, ×1
-        (neutro, no listado) y ×2. Cálculo con la tabla de tipos oficial de la 6.ª generación en
-        adelante.
+        La escala de daño va de ×0 (inmune) a ×4 (doblemente débil), pasando por ×¼, ×½, ×1 (neutro,
+        no listado) y ×2. Cálculo con la tabla de tipos oficial de la 6.ª generación en adelante.
       </div>
     </div>
   );

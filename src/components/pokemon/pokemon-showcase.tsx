@@ -96,7 +96,7 @@ export function PokemonShowcase({ id, accent, alt, cry }: PokemonShowcaseProps) 
               height={300}
               unoptimized
               onError={() => setAnimatedFailed(true)}
-              className="h-[64%] w-[64%] object-contain [image-rendering:pixelated] drop-shadow-xl"
+              className="h-[64%] w-[64%] object-contain drop-shadow-xl [image-rendering:pixelated]"
             />
           </div>
         ) : null}

@@ -100,7 +100,15 @@ export function useFilterState(): FilterState {
   );
   const reset = useCallback(
     () =>
-      void setRaw({ q: "", type: null, type2: null, gen: null, sort: DEFAULT_SORT, fav: false, p: null }),
+      void setRaw({
+        q: "",
+        type: null,
+        type2: null,
+        gen: null,
+        sort: DEFAULT_SORT,
+        fav: false,
+        p: null,
+      }),
     [setRaw],
   );
 

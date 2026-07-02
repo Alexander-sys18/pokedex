@@ -60,7 +60,11 @@ export default async function ComparePage({ searchParams }: PageProps) {
         </p>
       </section>
 
-      <ComparatorControls entries={pokedex.entries} aId={aDetail?.id ?? null} bId={bDetail?.id ?? null} />
+      <ComparatorControls
+        entries={pokedex.entries}
+        aId={aDetail?.id ?? null}
+        bId={bDetail?.id ?? null}
+      />
 
       {aDetail && bDetail ? (
         <ComparisonView a={aDetail} b={bDetail} />
@@ -74,8 +78,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
           </p>
           <div className="flex flex-col items-center gap-2">
             <p className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-medium">
-              <Sparkles className="size-3.5" aria-hidden />
-              O prueba un duelo clásico:
+              <Sparkles className="size-3.5" aria-hidden />O prueba un duelo clásico:
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {PRESET_MATCHUPS.map((preset) => (

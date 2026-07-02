@@ -11,7 +11,8 @@ const OPTIONS = [
     value: "light",
     label: "Modo día",
     Icon: Sun,
-    activeClass: "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm shadow-amber-500/40",
+    activeClass:
+      "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm shadow-amber-500/40",
   },
   {
     value: "system",
@@ -23,7 +24,8 @@ const OPTIONS = [
     value: "dark",
     label: "Modo noche",
     Icon: Moon,
-    activeClass: "bg-gradient-to-br from-blue-600 to-blue-950 text-amber-200 shadow-sm shadow-blue-500/40",
+    activeClass:
+      "bg-gradient-to-br from-blue-600 to-blue-950 text-amber-200 shadow-sm shadow-blue-500/40",
   },
 ] as const;
 

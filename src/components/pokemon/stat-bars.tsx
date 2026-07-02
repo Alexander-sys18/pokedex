@@ -10,7 +10,7 @@ interface StatBarsProps {
 /**
  * Base-stat bars animated with the shared CSS `animate-meter` keyframe (same
  * as the comparator) — no client JS or animation library needed, so this
- * renders on the server and framer-motion stays out of the bundle.
+ * renders entirely on the server.
  */
 export function StatBars({ stats, total, accent }: StatBarsProps) {
   return (

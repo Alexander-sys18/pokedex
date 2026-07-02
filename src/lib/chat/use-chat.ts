@@ -33,18 +33,20 @@ function loadStoredMessages(): ChatMessage[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (m): m is ChatMessage =>
-          typeof m === "object" &&
-          m !== null &&
-          typeof (m as ChatMessage).id === "string" &&
-          ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
-          typeof (m as ChatMessage).content === "string",
-      )
-      // A reload mid-stream can leave an empty assistant stub — drop it.
-      .filter((m) => m.content.length > 0)
-      .slice(-MAX_STORED_MESSAGES);
+    return (
+      parsed
+        .filter(
+          (m): m is ChatMessage =>
+            typeof m === "object" &&
+            m !== null &&
+            typeof (m as ChatMessage).id === "string" &&
+            ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
+            typeof (m as ChatMessage).content === "string",
+        )
+        // A reload mid-stream can leave an empty assistant stub — drop it.
+        .filter((m) => m.content.length > 0)
+        .slice(-MAX_STORED_MESSAGES)
+    );
   } catch {
     return [];
   }
@@ -68,10 +70,7 @@ export function useChat() {
       if (messages.length === 0) {
         sessionStorage.removeItem(STORAGE_KEY);
       } else {
-        sessionStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
-        );
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));
       }
     } catch {
       // Storage unavailable — the chat just won't survive a reload.

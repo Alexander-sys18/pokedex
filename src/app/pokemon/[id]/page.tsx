@@ -213,9 +213,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Notas del Profesor Oak
             </p>
-            <p className="text-foreground mt-1 text-sm leading-relaxed">
-              {professorNotes(detail)}
-            </p>
+            <p className="text-foreground mt-1 text-sm leading-relaxed">{professorNotes(detail)}</p>
           </div>
         </div>
       </section>

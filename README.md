@@ -33,7 +33,8 @@ de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable co
 ## ⚡ Arranque rápido
 
 Requisitos: **Node ≥ 20** y **pnpm** (`npm i -g pnpm`). El primer arranque descarga los datos
-de la PokéAPI y genera un índice local (~1–2 s).
+de la PokéAPI y genera un índice local (~10–30 s según la conexión; las siguientes veces usa
+la caché y es instantáneo).
 
 ```bash
 pnpm install
@@ -54,9 +55,9 @@ docker compose up --build   # http://localhost:3000
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Listado ordenado por id**                  | Grid paginado (60/página, **instantáneo**: la paginación es un _slice_ en memoria); orden por nº ascendente por defecto.                                                 |
 | **Nombre, generación y tipos**               | Cada tarjeta muestra nº de Pokédex, nombre, generación y badges de tipo.                                                                                                 |
-| **Filtro por tipo**                          | Selector accesible con los 18 tipos, **más un segundo selector de tipo** para filtrar tipados duales (p. ej. Fuego + Volador).                                          |
+| **Filtro por tipo**                          | Selector accesible con los 18 tipos, **más un segundo selector de tipo** para filtrar tipados duales (p. ej. Fuego + Volador).                                           |
 | **Filtro por generación**                    | Selector con las 9 generaciones y su región.                                                                                                                             |
-| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes (input local instantáneo + **debounce de 300 ms** antes de propagar el filtro), sin recargar.                                              |
+| **Buscador por nombre en tiempo real**       | Filtra a medida que escribes (input local instantáneo + **debounce de 300 ms** antes de propagar el filtro), sin recargar.                                               |
 | **Búsqueda incluyendo evoluciones**          | Buscar `pikachu` muestra también `pichu` y `raichu` (familia evolutiva completa).                                                                                        |
 | **Página de detalle**                        | Nombre, imagen (3D/shiny), generación, tipos, estadísticas (barras + radar) y evoluciones — más debilidades, localizaciones, cría, entrenamiento, curiosidades y formas. |
 | **Evoluciones con imágenes y navegación**    | Cadena evolutiva con ramas (p. ej. Eevee) y el **método real de cada evolución** (nivel, piedra, amistad, intercambio…) bajo cada flecha; cada nodo enlaza a su ficha.   |
@@ -97,7 +98,7 @@ con `prefers-reduced-motion`), accesibilidad (roles ARIA, foco visible).
 | **next-themes**                                             | Tema claro/oscuro sin _flash_ de hidratación.                                                 |
 | **@anthropic-ai/sdk (Claude)**                              | Asistente con _tool use_ y búsqueda por foto (Claude Vision). Server-side.                    |
 | **three / @react-three/fiber / drei**                       | Escena WebGL del detalle con **modelos 3D reales (.glb)** (carga diferida solo en esa ruta).  |
-| **Vitest + Testing Library**                                | Tests unitarios de la lógica pura (búsqueda, filtros, normalización).                         |
+| **Vitest**                                                  | Tests unitarios de la lógica pura (búsqueda, filtros, normalización).                         |
 
 ---
 
@@ -163,7 +164,7 @@ frente a sus evoluciones.
 - Las tarjetas tienen alturas deterministas (cajas `aspect-square`), por lo que la restauración
   de scroll al volver del detalle es exacta incluso antes de que carguen las imágenes.
 - `next/image` con carga diferida y degradación de _sprite_ ante fallos;
-  `optimizePackageImports` para `lucide-react` y `framer-motion`.
+  `optimizePackageImports` para `lucide-react`.
 
 > **Decisión:** inicialmente el listado usaba virtualización por ventana; se sustituyó por
 > paginación (mejor orientación espacial y URLs compartibles por página) sin perder inmediatez,
@@ -322,7 +323,7 @@ src/
 │   ├── comparar/page.tsx       # Comparador (dirigido por ?a=&b=, ISR)
 │   ├── equipo/page.tsx         # Constructor de equipo (índice → cliente)
 │   ├── manifest.ts             # Web App Manifest (PWA)
-│   ├── api/{chat,vision}/      # Route handlers de IA (Claude)
+│   ├── api/{chat,vision,team}/ # Route handlers de IA (Claude)
 │   ├── loading / error / not-found
 │   └── globals.css             # Tokens de tema + tipos + animaciones
 ├── components/

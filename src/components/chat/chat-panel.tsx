@@ -94,7 +94,9 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
               onClick={() => speech.setEnabled(!speech.enabled)}
               aria-pressed={speech.enabled}
               aria-label={speech.enabled ? "Desactivar la voz" : "Activar la voz"}
-              title={speech.enabled ? "Desactivar la voz del Profesor" : "Activar la voz del Profesor"}
+              title={
+                speech.enabled ? "Desactivar la voz del Profesor" : "Activar la voz del Profesor"
+              }
               className={cn(
                 "grid size-8 place-items-center rounded-lg transition-colors",
                 speech.enabled
@@ -148,14 +150,14 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
                   alt="Profesor Oak"
                   fill
                   unoptimized
-                  className="object-contain [image-rendering:pixelated] drop-shadow-md"
+                  className="object-contain drop-shadow-md [image-rendering:pixelated]"
                 />
               </div>
             </div>
             <div className="border-border bg-background/50 relative rounded-xl border p-3">
               <p className="text-foreground text-sm leading-relaxed">
-                ¡Hola! Soy el <span className="font-semibold">Profesor Oak</span>. Pregúntame lo
-                que quieras sobre Pokémon: datos, comparativas, evoluciones, debilidades, trucos o
+                ¡Hola! Soy el <span className="font-semibold">Profesor Oak</span>. Pregúntame lo que
+                quieras sobre Pokémon: datos, comparativas, evoluciones, debilidades, trucos o
                 estrategia.
                 {speech.supported ? (
                   <span className="text-muted-foreground">

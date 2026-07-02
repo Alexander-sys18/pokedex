@@ -41,7 +41,8 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
 
   const byId = useMemo(() => new Map(entries.map((entry) => [entry.id, entry])), [entries]);
   const members = useMemo(
-    () => teamIds.map((id) => byId.get(id)).filter((entry): entry is PokedexEntry => Boolean(entry)),
+    () =>
+      teamIds.map((id) => byId.get(id)).filter((entry): entry is PokedexEntry => Boolean(entry)),
     [teamIds, byId],
   );
 
@@ -191,7 +192,10 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
           >
             <p className="text-foreground mb-2 text-sm">
               <span className="font-bold">{analysis.covered.length}</span>
-              <span className="text-muted-foreground"> / {POKEMON_TYPES.length} tipos cubiertos</span>
+              <span className="text-muted-foreground">
+                {" "}
+                / {POKEMON_TYPES.length} tipos cubiertos
+              </span>
             </p>
             {analysis.gaps.length > 0 ? (
               <div>
@@ -248,7 +252,7 @@ function TeamManager() {
             "inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium transition-colors",
             "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
             team.id === activeId
-              ? "border-transparent bg-foreground text-background"
+              ? "bg-foreground text-background border-transparent"
               : "border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground",
           )}
         >
@@ -295,7 +299,7 @@ function TeamManager() {
             type="button"
             onClick={commitRename}
             aria-label="Guardar nombre"
-            className="text-emerald-600 hover:bg-muted grid size-9 place-items-center rounded-xl transition-colors dark:text-emerald-400"
+            className="hover:bg-muted grid size-9 place-items-center rounded-xl text-emerald-600 transition-colors dark:text-emerald-400"
           >
             <Check className="size-4" />
           </button>

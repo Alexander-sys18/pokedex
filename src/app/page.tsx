@@ -1,40 +1,40 @@
 import { Suspense } from "react";
+import { PokedexHero } from "@/components/pokedex/hero";
 import { PokedexExplorer } from "@/components/pokedex/pokedex-explorer";
 import { PokedexSkeleton } from "@/components/pokedex/pokedex-skeleton";
 import { getPokedex } from "@/lib/pokedex";
 import { GENERATIONS, POKEMON_TYPES } from "@/lib/pokedex/constants";
 
+// Re-rendered hourly so the server-computed "Pokémon of the day" follows the
+// calendar (the index itself is a local file — regeneration is cheap).
+export const revalidate = 3600;
+
+/** Deterministic hash of the date → the same featured Pokémon all day. */
+function pickIndexForToday(length: number): number {
+  const now = new Date();
+  const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % length;
+}
+
 export default async function HomePage() {
   const pokedex = await getPokedex();
-
-  const facts = [
-    `${pokedex.entries.length} Pokémon`,
-    `${pokedex.familyCount} familias evolutivas`,
-    `${GENERATIONS.length} generaciones`,
-    `${POKEMON_TYPES.length} tipos`,
-  ];
+  const featured = pokedex.entries[pickIndexForToday(pokedex.entries.length)]!;
 
   return (
-    <div className="flex flex-col gap-7">
-      <section className="flex flex-col gap-3">
-        <h1 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-          Explora la Pokédex
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
-          Busca por nombre —incluyendo su cadena evolutiva—, filtra por tipo y generación, hazle una
-          foto a un Pokémon para identificarlo o pregúntale lo que quieras al asistente.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {facts.map((fact) => (
-            <span
-              key={fact}
-              className="border-border bg-surface text-muted-foreground rounded-full border px-3 py-1 text-xs font-medium"
-            >
-              {fact}
-            </span>
-          ))}
-        </div>
-      </section>
+    <div className="flex flex-col gap-5">
+      <PokedexHero
+        featured={featured}
+        facts={{
+          pokemon: pokedex.entries.length,
+          families: pokedex.familyCount,
+          generations: GENERATIONS.length,
+          types: POKEMON_TYPES.length,
+        }}
+      />
 
       {/* Suspense satisfies nuqs' use of useSearchParams and shows a skeleton
           on first paint / when landing on a shared, filtered URL. */}

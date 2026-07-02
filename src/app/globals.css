@@ -22,7 +22,9 @@
 
   --shadow-card: 0 1px 2px rgb(16 18 24 / 0.04), 0 8px 24px -12px rgb(16 18 24 / 0.12);
   --shadow-card-hover: 0 2px 4px rgb(16 18 24 / 0.06), 0 18px 40px -16px rgb(16 18 24 / 0.22);
-  --glow-opacity: 0.14;
+  /* Soft in light mode: the aura should read as an ambient spotlight, not a
+     colored disc behind the artwork. */
+  --glow-opacity: 0.09;
 }
 
 /* ----------------------------------------------------------------- Dark theme
@@ -99,6 +101,10 @@ body {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* Zero the delay too: with animation-fill-mode: both, a non-zero delay
+       would otherwise hold elements at their (invisible) "from" keyframe during
+       the delay window instead of showing the final state instantly. */
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
@@ -113,13 +119,19 @@ body {
 }
 
 /* Type-tinted radial aura behind Pokémon artwork. Cards set `--type` inline;
-   `--glow-opacity` scales it up in dark mode for the neon look. */
+   `--glow-opacity` scales it up in dark mode for the neon look. In light mode a
+   wide, soft falloff keeps it an ambient spotlight rather than a hard disc. */
 .type-aura {
   background: radial-gradient(
-    circle at 50% 55%,
-    color-mix(in oklab, var(--type) calc(var(--glow-opacity) * 100%), transparent),
-    transparent 70%
+    circle at 50% 58%,
+    color-mix(in oklab, var(--type) calc(var(--glow-opacity) * 100%), transparent) 0%,
+    color-mix(in oklab, var(--type) calc(var(--glow-opacity) * 45%), transparent) 38%,
+    transparent 72%
   );
+  filter: blur(2px);
+}
+.dark .type-aura {
+  filter: none;
 }
 
 /* Pointer-driven 3D tilt (vars set by useTilt). */
@@ -156,8 +168,8 @@ body {
 .detail-hero {
   background: linear-gradient(
     135deg,
-    color-mix(in oklab, var(--type) 15%, transparent),
-    transparent 62%
+    color-mix(in oklab, var(--type) 10%, transparent),
+    transparent 60%
   );
 }
 .dark .detail-hero {
@@ -166,4 +178,150 @@ body {
     color-mix(in oklab, var(--type) 26%, transparent),
     transparent 60%
   );
+}
+
+/* ------------------------------------------------------------- animations
+   Small, tasteful entrance/meter animations. All are capped to ~0ms by the
+   prefers-reduced-motion block above, so they degrade to their final state. */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Grows a bar from 0 to its target width. The element sets `--fill: <pct>%`. */
+@keyframes meter-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--fill, 0%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.animate-zoom-in {
+  animation: zoom-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-meter {
+  width: var(--fill, 0%);
+  animation: meter-fill 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Springy confirmation pop for the favorite heart (restarted via key remount). */
+@keyframes heart-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  45% {
+    transform: scale(1.25);
+  }
+  70% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-pop {
+  animation: heart-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Pending-navigation indicator: fades in with a short delay so instant
+   (prefetched/cached) navigations never flash a spinner. */
+.nav-pending {
+  animation: fade-in 0.2s ease-out 0.15s both;
+}
+
+/* ---------------------------------------------------------- Professor Oak
+   Gentle idle float for the big greeting sprite, and a talking bob applied to
+   the avatar while a reply streams or the voice is speaking. */
+@keyframes oak-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.oak-float {
+  animation: oak-float 3.2s ease-in-out infinite;
+}
+
+@keyframes oak-talk {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-1px) scale(1.05);
+  }
+  65% {
+    transform: translateY(0.5px) scale(0.98);
+  }
+}
+
+.oak-talking img {
+  animation: oak-talk 0.8s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ hero
+   Type-tinted ambient gradients over the surface tone; `--type` is set inline
+   from the featured Pokémon's primary type, so the hero changes with the day. */
+.hero-panel {
+  background:
+    radial-gradient(
+      44rem 20rem at 88% -25%,
+      color-mix(in oklab, var(--type, #6366f1) 16%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(32rem 18rem at -12% 115%, rgb(99 102 241 / 0.07), transparent 60%),
+    var(--surface);
+}
+
+.dark .hero-panel {
+  background:
+    radial-gradient(
+      44rem 20rem at 88% -25%,
+      color-mix(in oklab, var(--type, #818cf8) 30%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(32rem 18rem at -12% 115%, rgb(99 102 241 / 0.12), transparent 60%),
+    var(--surface);
 }

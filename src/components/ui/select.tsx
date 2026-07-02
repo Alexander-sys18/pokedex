@@ -57,7 +57,7 @@ export function Select({ value, onValueChange, options, ariaLabel, icon, classNa
           sideOffset={6}
           className={cn(
             "z-50 max-h-[min(24rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)]",
-            "border-border bg-surface overflow-hidden rounded-xl border shadow-[var(--shadow-card-hover)]",
+            "border-border bg-popover overflow-hidden rounded-xl border shadow-[var(--shadow-card-hover)]",
           )}
         >
           <SelectPrimitive.Viewport className="p-1">

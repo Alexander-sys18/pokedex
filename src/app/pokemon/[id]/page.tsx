@@ -14,6 +14,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { BackButton } from "@/components/pokemon/back-button";
 import { EvolutionChain } from "@/components/pokemon/evolution-chain";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
@@ -50,6 +51,19 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * Full-page ISR: the rendered HTML is cached per id and revalidated daily, so
+ * repeat visits are served statically (no PokéAPI on the request path). The
+ * most-clicked pages (Kanto starters + Pikachu) are prerendered at build time;
+ * the rest generate on first visit.
+ */
+export const revalidate = 86400;
+export const dynamicParams = true;
+
+export function generateStaticParams() {
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9, 25].map((id) => ({ id: String(id) }));
+}
+
 function parseId(raw: string): number | null {
   // Only a canonical integer string is a valid id — reject "1e3", "0x10",
   // "25.0", " 25 ", leading zeros, etc. so each Pokémon has a single URL.
@@ -78,9 +92,6 @@ export default async function PokemonDetailPage({ params }: PageProps) {
 
   const [detail, pokedex] = await Promise.all([getPokemonDetail(parsed), getPokedex()]);
   if (!detail) notFound();
-
-  // Card scans are pure enrichment — fetched after we know the species slug.
-  const cards = await getTcgCards(detail.name);
 
   const accent = primaryTypeColor(detail.types);
   const region = GENERATION_REGIONS[detail.generation];
@@ -344,12 +355,10 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         )}
       </Panel>
 
-      {/* Trading cards */}
-      {cards.length > 0 ? (
-        <Panel title="Cartas del JCC">
-          <TcgCards cards={cards} />
-        </Panel>
-      ) : null}
+      {/* Trading cards — streamed via Suspense so TCGdex never blocks the page. */}
+      <Suspense fallback={<CardsSkeleton />}>
+        <CardsSection name={detail.name} />
+      </Suspense>
 
       {/* Alternative forms */}
       {detail.varieties.length > 0 ? (
@@ -379,6 +388,30 @@ export default async function PokemonDetailPage({ params }: PageProps) {
 }
 
 /* ---------------------------------------------------------------- helpers */
+
+/** Async section streamed after the main content; hides itself if no cards. */
+async function CardsSection({ name }: { name: string }) {
+  const cards = await getTcgCards(name);
+  if (cards.length === 0) return null;
+  return (
+    <Panel title="Cartas del JCC">
+      <TcgCards cards={cards} />
+    </Panel>
+  );
+}
+
+function CardsSkeleton() {
+  return (
+    <section className="border-border bg-surface rounded-2xl border p-5 sm:p-6" aria-hidden>
+      <div className="bg-muted mb-4 h-6 w-36 animate-pulse rounded" />
+      <div className="flex gap-3 overflow-hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="bg-muted aspect-[63/88] w-36 shrink-0 animate-pulse rounded-lg" />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (

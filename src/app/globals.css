@@ -8,6 +8,8 @@
 :root {
   --background: #f6f7f9;
   --surface: #ffffff;
+  /* Floating panels (chat, popovers, selects) need a fully OPAQUE background. */
+  --popover: #ffffff;
   --surface-hover: #fbfbfd;
   --foreground: #14151a;
   --muted: #eef0f3;
@@ -28,6 +30,8 @@
 .dark {
   --background: #08090d;
   --surface: rgb(255 255 255 / 0.035);
+  /* Solid (non-translucent) elevated tone for floating panels. */
+  --popover: #13151b;
   --surface-hover: rgb(255 255 255 / 0.06);
   --foreground: #f4f5f8;
   --muted: rgb(255 255 255 / 0.06);
@@ -46,6 +50,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-popover: var(--popover);
   --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);

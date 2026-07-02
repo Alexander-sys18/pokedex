@@ -110,7 +110,7 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
       </button>
 
       {result ? (
-        <div className="border-border bg-surface absolute top-full right-0 z-30 mt-2 w-64 rounded-xl border p-3 shadow-[var(--shadow-card-hover)]">
+        <div className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-64 rounded-xl border p-3 shadow-[var(--shadow-card-hover)]">
           <button
             type="button"
             onClick={() => setResult(null)}

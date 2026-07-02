@@ -20,6 +20,12 @@ de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable co
 
 > Alternativa sin desplegar nada: **`docker compose up --build`** y abre `http://localhost:3000`.
 
+> **Nota para evaluar:** el repositorio no contiene ningún secreto. La app completa funciona
+> **sin configurar nada** (las funciones de IA se ocultan solas si no hay clave). En la **demo
+> online** la IA está activa — la `ANTHROPIC_API_KEY` vive como variable de entorno del
+> despliegue, nunca en el código. Para probar la IA en local, basta poner una clave propia en
+> `.env` (ver `.env.example`).
+
 ---
 
 ## ⚡ Arranque rápido

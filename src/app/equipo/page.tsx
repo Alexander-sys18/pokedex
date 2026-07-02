@@ -23,8 +23,9 @@ export default async function TeamPage() {
           Constructor de equipo
         </h1>
         <p className="text-muted-foreground mt-1.5 max-w-2xl text-sm sm:text-base">
-          Elige hasta seis Pokémon y analiza el equilibrio de tipos del equipo: debilidades
-          compartidas, resistencias y cobertura ofensiva. Se guarda en tu navegador.
+          Crea y guarda varios equipos de hasta seis Pokémon, pídele al Profesor Oak que te
+          proponga uno a tu medida, y analiza el equilibrio de tipos: debilidades compartidas,
+          resistencias y cobertura ofensiva. Todo se guarda en tu navegador.
         </p>
       </section>
 

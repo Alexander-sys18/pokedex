@@ -1,8 +1,8 @@
 "use client";
 
-import { Plus, ShieldAlert, ShieldCheck, Swords, Trash2, X } from "lucide-react";
+import { Check, Pencil, Plus, ShieldAlert, ShieldCheck, Swords, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
 import { TypeBadge } from "@/components/pokemon/type-badge";
 import { PokemonPicker } from "@/components/pokedex/pokemon-picker";
@@ -10,8 +10,21 @@ import { primaryTypeColor } from "@/lib/pokedex/colors";
 import { POKEMON_TYPES, TYPE_LABELS_ES } from "@/lib/pokedex/constants";
 import { defensiveEffectiveness, offensiveCoverage } from "@/lib/pokedex/type-chart";
 import type { PokedexEntry, PokemonTypeName } from "@/lib/pokedex/types";
-import { addToTeam, clearTeam, MAX_TEAM, removeFromTeam, useTeam } from "@/lib/team";
+import {
+  addToTeam,
+  clearTeam,
+  createTeam,
+  deleteTeam,
+  MAX_TEAM,
+  MAX_TEAMS,
+  removeFromTeam,
+  renameTeam,
+  selectTeam,
+  useTeam,
+  useTeams,
+} from "@/lib/team";
 import { cn, prettifyName } from "@/lib/utils";
+import { OakTeamAssistant } from "./team-ai";
 
 interface TeamBuilderProps {
   entries: PokedexEntry[];
@@ -68,6 +81,12 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Saved teams: select, create, rename, delete (all in localStorage). */}
+      <TeamManager />
+
+      {/* Let the Professor propose a team from a plain-Spanish wish. */}
+      <OakTeamAssistant entries={entries} />
+
       {/* Team slots */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {slots.map((member, index) =>
@@ -194,6 +213,133 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
           </AnalysisPanel>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Chips for every saved team + create/rename/delete for the active one. */
+function TeamManager() {
+  const { teams, activeId } = useTeams();
+  const [editing, setEditing] = useState(false);
+  const [draftName, setDraftName] = useState("");
+  const [deleteArmed, setDeleteArmed] = useState(false);
+
+  const active = teams.find((t) => t.id === activeId);
+  if (!active) return null; // SSR / first paint — the store hydrates right after.
+
+  const commitRename = () => {
+    renameTeam(active.id, draftName);
+    setEditing(false);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {teams.map((team) => (
+        <button
+          key={team.id}
+          type="button"
+          onClick={() => {
+            selectTeam(team.id);
+            setEditing(false);
+            setDeleteArmed(false);
+          }}
+          aria-pressed={team.id === activeId}
+          className={cn(
+            "inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium transition-colors",
+            "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+            team.id === activeId
+              ? "border-transparent bg-foreground text-background"
+              : "border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+          )}
+        >
+          {team.name}
+          <span
+            className={cn(
+              "font-mono text-[0.7rem]",
+              team.id === activeId ? "text-background/70" : "text-muted-foreground/70",
+            )}
+          >
+            {team.members.length}/{MAX_TEAM}
+          </span>
+        </button>
+      ))}
+
+      {teams.length < MAX_TEAMS ? (
+        <button
+          type="button"
+          onClick={() => createTeam()}
+          className="border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground inline-flex h-9 items-center gap-1 rounded-xl border border-dashed px-3 text-sm font-medium transition-colors"
+        >
+          <Plus className="size-4" />
+          Nuevo
+        </button>
+      ) : null}
+
+      <span className="bg-border mx-1 hidden h-5 w-px sm:block" aria-hidden />
+
+      {editing ? (
+        <span className="flex items-center gap-1">
+          <input
+            autoFocus
+            value={draftName}
+            maxLength={30}
+            onChange={(e) => setDraftName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitRename();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            aria-label="Nuevo nombre del equipo"
+            className="border-border bg-background text-foreground focus-visible:ring-ring h-9 w-40 rounded-xl border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+          />
+          <button
+            type="button"
+            onClick={commitRename}
+            aria-label="Guardar nombre"
+            className="text-emerald-600 hover:bg-muted grid size-9 place-items-center rounded-xl transition-colors dark:text-emerald-400"
+          >
+            <Check className="size-4" />
+          </button>
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setDraftName(active.name);
+            setEditing(true);
+            setDeleteArmed(false);
+          }}
+          aria-label={`Renombrar ${active.name}`}
+          title="Renombrar equipo"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 place-items-center rounded-xl transition-colors"
+        >
+          <Pencil className="size-4" />
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          if (!deleteArmed) {
+            setDeleteArmed(true);
+            return;
+          }
+          deleteTeam(active.id);
+          setDeleteArmed(false);
+          setEditing(false);
+        }}
+        onBlur={() => setDeleteArmed(false)}
+        aria-label={deleteArmed ? `Confirmar borrado de ${active.name}` : `Borrar ${active.name}`}
+        title={deleteArmed ? "Pulsa otra vez para confirmar" : "Borrar equipo"}
+        className={cn(
+          "inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sm font-medium transition-colors",
+          deleteArmed
+            ? "bg-red-500/15 text-red-600 dark:text-red-400"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <Trash2 className="size-4" />
+        {deleteArmed ? "¿Borrar?" : null}
+      </button>
     </div>
   );
 }

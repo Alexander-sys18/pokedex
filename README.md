@@ -278,11 +278,19 @@ determinista por fecha como ancla visual — calculado **en el servidor** con IS
   **la comparación es compartible por enlace**. La selección es **optimista** (el elegido
   aparece al instante con un _spinner_ mientras carga) y el estado vacío ofrece duelos clásicos
   de un toque. El selector es un _combobox_ con búsqueda sobre el índice.
-- **Constructor de equipo** (`/equipo`): arma un equipo de hasta 6 y obtén un **análisis de
-  tipos** calculado en el cliente con la misma tabla embebida — **debilidades compartidas**
-  (alerta si 3+ miembros son débiles al mismo tipo), **resistencias** del conjunto y
-  **cobertura ofensiva** (cuántos de los 18 tipos golpea super efectivo y qué huecos quedan).
-  Se guarda en `localStorage`.
+- **Constructor de equipo** (`/equipo`): crea y guarda **varios equipos con nombre**
+  (localStorage, con migración del formato antiguo, renombrar/borrar y sincronización entre
+  pestañas) de hasta 6 miembros, con **análisis de tipos** calculado en el cliente con la misma
+  tabla embebida — **debilidades compartidas** (alerta si 3+ miembros son débiles al mismo
+  tipo), **resistencias** del conjunto y **cobertura ofensiva** (cuántos de los 18 tipos golpea
+  super efectivo y qué huecos quedan).
+- **Armar equipo con IA**: describe en texto libre lo que quieres («el mejor equipo
+  equilibrado», «un equipo alrededor de Charizard»…) y el **Profesor Oak propone los 6** con
+  la razón de cada elección, vía **salida estructurada** (JSON Schema) de Claude. Cada nombre
+  propuesto se **valida en el servidor contra el índice real** (nombre → id de la Pokédex), así
+  que nada inventado llega a la interfaz; luego puedes **aplicarlo al equipo activo o guardarlo
+  como equipo nuevo**. Opcional como el resto de la IA: sin `ANTHROPIC_API_KEY` el panel no
+  aparece.
 - **Favoritos**: marca cualquier Pokémon con el corazón (en la tarjeta o en el detalle); se
   **persisten en `localStorage`** y se sincronizan entre pestañas. Un botón en los filtros
   muestra **solo tus favoritos**. Implementado con `useSyncExternalStore` (hidratación sin

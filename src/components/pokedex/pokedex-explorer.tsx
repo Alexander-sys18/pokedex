@@ -1,12 +1,12 @@
 "use client";
 
-import { SearchX } from "lucide-react";
+import { Heart, SearchX } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
+import { useFavoriteIds } from "@/lib/favorites";
 import { applyFilters, hasActiveFilters, toSearchable } from "@/lib/pokedex/search";
 import type { PokedexEntry } from "@/lib/pokedex/types";
 import { saveListScroll } from "@/lib/scroll-store";
 import { useFilterState } from "@/lib/url-state";
-import { FeaturedPokemon } from "./featured-pokemon";
 import { FiltersBar } from "./filters-bar";
 import { Pagination } from "./pagination";
 import { PokemonGrid } from "./pokemon-grid";
@@ -20,15 +20,24 @@ const PAGE_SIZE = 60;
 
 export function PokedexExplorer({ entries }: PokedexExplorerProps) {
   const state = useFilterState();
-  const { filters } = state;
+  const { filters, favoritesOnly } = state;
+  const favoriteIds = useFavoriteIds();
 
   // Normalize names once; re-used across every keystroke.
   const searchable = useMemo(() => toSearchable(entries), [entries]);
 
-  const { results, directMatchIds } = useMemo(
+  const { results: filtered, directMatchIds } = useMemo(
     () => applyFilters(searchable, filters),
     [searchable, filters],
   );
+
+  // The favorites-only view is a client-side membership filter layered on top of
+  // the pure filter result (favorites live in localStorage, not in the index).
+  const results = useMemo(() => {
+    if (!favoritesOnly) return filtered;
+    const favSet = new Set(favoriteIds);
+    return filtered.filter((entry) => favSet.has(entry.id));
+  }, [filtered, favoritesOnly, favoriteIds]);
 
   // Pagination is a slice over the in-memory filtered list — instant, no
   // requests. The page number lives in the URL (restored on back-navigation)
@@ -50,7 +59,7 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
     }
     saveListScroll(0);
     window.scrollTo({ top: 0 });
-  }, [filters.query, filters.type, filters.generation, filters.sort]);
+  }, [filters.query, filters.type, filters.type2, filters.generation, filters.sort, favoritesOnly]);
 
   const goToPage = (next: number) => {
     state.setPage(next);
@@ -58,17 +67,15 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const filtersActive = hasActiveFilters(filters);
-  const evolutionsIncluded = filtersActive && results.length > directMatchIds.size;
+  const filtersActive = hasActiveFilters(filters) || favoritesOnly;
+  const evolutionsIncluded =
+    hasActiveFilters(filters) && !favoritesOnly && results.length > directMatchIds.size;
   const rangeStart = results.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, results.length);
 
   return (
     <div className="flex flex-col gap-5">
-      <FiltersBar state={state} />
-
-      {/* Daily highlight — hidden while the user is actively filtering. */}
-      {!filtersActive ? <FeaturedPokemon entries={entries} /> : null}
+      <FiltersBar state={state} favoritesCount={favoriteIds.length} />
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-muted-foreground text-sm">
@@ -100,8 +107,27 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
           <PokemonGrid entries={pageItems} directMatchIds={directMatchIds} />
           <Pagination page={page} pageCount={pageCount} onPageChange={goToPage} />
         </>
+      ) : favoritesOnly && favoriteIds.length === 0 ? (
+        <div className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-4 py-12 text-center">
+          <div className="bg-muted grid size-14 place-items-center rounded-full text-rose-500">
+            <Heart className="size-7" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-foreground font-semibold">Aún no tienes favoritos</p>
+            <p className="text-muted-foreground text-sm">
+              Pulsa el corazón en cualquier Pokémon para guardarlo aquí.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => state.setFavoritesOnly(false)}
+            className="bg-foreground text-background rounded-xl px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
+          >
+            Ver toda la Pokédex
+          </button>
+        </div>
       ) : (
-        <div className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed py-20 text-center">
+        <div className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-4 py-12 text-center">
           <div className="bg-muted text-muted-foreground grid size-14 place-items-center rounded-full">
             <SearchX className="size-7" />
           </div>

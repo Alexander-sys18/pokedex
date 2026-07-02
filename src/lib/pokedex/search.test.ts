@@ -22,7 +22,7 @@ const ENTRIES: PokedexEntry[] = [
 const searchable = toSearchable(ENTRIES);
 
 function filters(overrides: Partial<PokedexFilters>): PokedexFilters {
-  return { query: "", type: null, generation: null, sort: "dex-asc", ...overrides };
+  return { query: "", type: null, type2: null, generation: null, sort: "dex-asc", ...overrides };
 }
 
 const names = (entries: { name: string }[]) => entries.map((e) => e.name);

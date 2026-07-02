@@ -9,6 +9,8 @@ export interface PokedexFilters {
   /** Raw search text as typed by the user. */
   query: string;
   type: PokemonTypeName | null;
+  /** A second required type — enables dual-type filtering (e.g. Fire + Flying). */
+  type2: PokemonTypeName | null;
   generation: GenerationNumber | null;
   sort: SortKey;
 }
@@ -16,6 +18,7 @@ export interface PokedexFilters {
 export const EMPTY_FILTERS: PokedexFilters = {
   query: "",
   type: null,
+  type2: null,
   generation: null,
   sort: DEFAULT_SORT,
 };
@@ -82,10 +85,14 @@ export function applyFilters(
     results = entries.filter((entry) => matchedFamilies.has(entry.familyId));
   }
 
-  // 3. Type and generation filters (AND with the search result).
+  // 3. Type, second-type and generation filters (AND with the search result).
   if (filters.type !== null) {
     const type = filters.type;
     results = results.filter((entry) => entry.types.includes(type));
+  }
+  if (filters.type2 !== null) {
+    const type2 = filters.type2;
+    results = results.filter((entry) => entry.types.includes(type2));
   }
   if (filters.generation !== null) {
     const generation = filters.generation;
@@ -112,6 +119,7 @@ export function hasActiveFilters(filters: PokedexFilters): boolean {
   return (
     normalizeSearch(filters.query).length > 0 ||
     filters.type !== null ||
+    filters.type2 !== null ||
     filters.generation !== null
   );
 }

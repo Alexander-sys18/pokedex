@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // Sprite/artwork URLs are immutable (content-addressed by dex id), so the
+    // optimizer can keep its transformed copies for a month without re-fetching.
+    minimumCacheTTL: 2_678_400,
     remotePatterns: [
       // Official artwork and sprites are served from the PokéAPI sprites repo.
       {
@@ -25,12 +28,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "assets.tcgdex.net",
       },
+      // Professor Oak trainer sprite (chat assistant avatar).
+      {
+        protocol: "https",
+        hostname: "play.pokemonshowdown.com",
+        pathname: "/sprites/**",
+      },
     ],
   },
 
   experimental: {
-    // Smaller client bundles: only the icons/animations actually used are pulled in.
-    optimizePackageImports: ["lucide-react", "framer-motion"],
+    // Smaller client bundles: only the icons actually used are pulled in.
+    optimizePackageImports: ["lucide-react"],
   },
 };
 

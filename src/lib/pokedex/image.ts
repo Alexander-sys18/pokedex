@@ -19,3 +19,24 @@ export function homeArtwork(id: number): string {
 export function pixelSprite(id: number): string {
   return `${SPRITES_BASE}/${id}.png`;
 }
+
+/** Animated battle sprite (Pokémon Showdown GIF). Not available for every id. */
+export function animatedSprite(id: number, shiny = false): string {
+  return `${SPRITES_BASE}/other/showdown/${shiny ? "shiny/" : ""}${id}.gif`;
+}
+
+/** Official Professor Oak trainer sprite (80×80 pixel art, Showdown CDN). */
+export function professorOakSprite(): string {
+  return "https://play.pokemonshowdown.com/sprites/trainers/oak.png";
+}
+
+/**
+ * Real 3D model (.glb, Draco-compressed) from the community Pokémon 3D API
+ * asset set, served through the jsDelivr CDN. Coverage is broad (~97% of the
+ * dex) but not total — always pair with a fallback for missing ids.
+ * https://github.com/Pokemon-3D-api/assets
+ */
+export function pokemonModel3D(id: number, shiny = false): string {
+  const variant = shiny ? "shiny" : "regular";
+  return `https://cdn.jsdelivr.net/gh/Pokemon-3D-api/assets@main/models/opt/${variant}/${id}.glb`;
+}

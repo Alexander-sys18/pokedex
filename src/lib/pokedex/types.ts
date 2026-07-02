@@ -60,6 +60,8 @@ export interface StatValue {
 export interface EvolutionNode {
   id: number;
   name: string;
+  /** How this node evolves FROM its parent ("Nivel 16", "Piedra Agua"…); null on the root. */
+  method: string | null;
   children: EvolutionNode[];
 }
 

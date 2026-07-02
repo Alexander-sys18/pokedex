@@ -15,8 +15,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { OakAvatar } from "@/components/chat/oak-avatar";
 import { BackButton } from "@/components/pokemon/back-button";
 import { EvolutionChain } from "@/components/pokemon/evolution-chain";
+import { LinkPending } from "@/components/ui/link-pending";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
 import { PokemonShowcase } from "@/components/pokemon/pokemon-showcase";
 import { StatBars } from "@/components/pokemon/stat-bars";
@@ -34,6 +36,7 @@ import {
 } from "@/lib/pokedex/constants";
 import { getPokemonDetail } from "@/lib/pokedex/detail";
 import { pixelSprite } from "@/lib/pokedex/image";
+import { professorNotes } from "@/lib/pokedex/oak-notes";
 import {
   colorLabel,
   eggGroupLabel,
@@ -99,7 +102,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
   const nextEntry = pokedex.entries.find((e) => e.id === detail.id + 1) ?? null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <nav className="flex items-center justify-between gap-3">
         <BackButton />
         <div className="flex items-center gap-1.5">
@@ -113,6 +116,14 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         className="detail-hero border-border relative overflow-hidden rounded-3xl border p-6 sm:p-8"
         style={{ ["--type" as string]: accent }}
       >
+        {/* Its own artwork, blown up and blurred, as an ambient backdrop. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -bottom-28 size-80 opacity-25 blur-2xl saturate-150 sm:size-[26rem]"
+        >
+          <PokemonArtwork id={detail.id} alt="" sizes="416px" />
+        </div>
+
         {detail.japaneseName ? (
           <span
             aria-hidden
@@ -122,7 +133,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
           </span>
         ) : null}
 
-        <div className="grid gap-6 md:grid-cols-[minmax(0,300px)_1fr] md:items-center">
+        <div className="relative grid gap-6 md:grid-cols-[minmax(0,300px)_1fr] md:items-center">
           <PokemonShowcase
             id={detail.id}
             accent={accent}
@@ -194,6 +205,21 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* The Professor's field notes — lively prose composed from real data. */}
+      <section className="border-border bg-surface rounded-2xl border p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <OakAvatar size={40} className="mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Notas del Profesor Oak
+            </p>
+            <p className="text-foreground mt-1 text-sm leading-relaxed">
+              {professorNotes(detail)}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Stats + type matchups */}
       <div className="grid gap-5 lg:grid-cols-[1.25fr_1fr]">
         <Panel title="Estadísticas base">
@@ -206,7 +232,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
         </Panel>
 
         <Panel title="Debilidades y resistencias">
-          <TypeEffectiveness types={detail.types} />
+          <TypeEffectiveness types={detail.types} showOffense />
         </Panel>
       </div>
 
@@ -464,8 +490,11 @@ function MiniMeter({
       </div>
       <div className="bg-muted h-2 overflow-hidden rounded-full">
         <div
-          className="h-full rounded-full"
-          style={{ width: `${Math.min(100, (value / max) * 100)}%`, backgroundColor: accent }}
+          className="animate-meter h-full rounded-full"
+          style={{
+            ["--fill" as string]: `${Math.min(100, (value / max) * 100)}%`,
+            backgroundColor: accent,
+          }}
         />
       </div>
     </div>
@@ -624,6 +653,7 @@ function DexNavLink({
         {prettifyName(entry.name)}
       </span>
       {direction === "next" ? <Icon className="size-5" /> : null}
+      <LinkPending mode="inline" />
     </Link>
   );
 }

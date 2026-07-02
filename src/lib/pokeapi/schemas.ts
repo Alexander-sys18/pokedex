@@ -37,15 +37,50 @@ export const evolutionChainListSchema = z.object({
   results: z.array(z.object({ url: z.string() })),
 });
 
+/** How one link evolves into the next (level, stone, trade, friendship…). */
+export interface EvolutionDetail {
+  trigger?: { name: string } | null;
+  min_level?: number | null;
+  min_happiness?: number | null;
+  min_affection?: number | null;
+  min_beauty?: number | null;
+  item?: { name: string } | null;
+  held_item?: { name: string } | null;
+  known_move?: { name: string } | null;
+  known_move_type?: { name: string } | null;
+  location?: { name: string } | null;
+  time_of_day?: string;
+  needs_overworld_rain?: boolean;
+  trade_species?: { name: string } | null;
+}
+
+const evolutionDetailSchema = z.object({
+  trigger: namedResourceSchema.nullish(),
+  min_level: z.number().nullish(),
+  min_happiness: z.number().nullish(),
+  min_affection: z.number().nullish(),
+  min_beauty: z.number().nullish(),
+  item: namedResourceSchema.nullish(),
+  held_item: namedResourceSchema.nullish(),
+  known_move: namedResourceSchema.nullish(),
+  known_move_type: namedResourceSchema.nullish(),
+  location: namedResourceSchema.nullish(),
+  time_of_day: z.string().optional(),
+  needs_overworld_rain: z.boolean().optional(),
+  trade_species: namedResourceSchema.nullish(),
+});
+
 /** A recursive node in an evolution chain. */
 export interface ChainLink {
   species: NamedResource;
   evolves_to: ChainLink[];
+  evolution_details?: EvolutionDetail[];
 }
 export const chainLinkSchema: z.ZodType<ChainLink> = z.lazy(() =>
   z.object({
     species: namedResourceSchema,
     evolves_to: z.array(chainLinkSchema),
+    evolution_details: z.array(evolutionDetailSchema).optional(),
   }),
 );
 

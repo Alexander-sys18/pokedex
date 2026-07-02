@@ -150,3 +150,51 @@ export const SHAPE_LABELS_ES: Record<string, string> = {
 export function shapeLabel(name: string): string {
   return SHAPE_LABELS_ES[name] ?? prettifyName(name);
 }
+
+/** Evolution items (stones & co.) in Spanish; fallback prettifies the slug. */
+export const EVOLUTION_ITEM_LABELS_ES: Record<string, string> = {
+  "thunder-stone": "Piedra Trueno",
+  "water-stone": "Piedra Agua",
+  "fire-stone": "Piedra Fuego",
+  "leaf-stone": "Piedra Hoja",
+  "moon-stone": "Piedra Lunar",
+  "sun-stone": "Piedra Solar",
+  "shiny-stone": "Piedra Día",
+  "dusk-stone": "Piedra Noche",
+  "dawn-stone": "Piedra Alba",
+  "ice-stone": "Piedra Hielo",
+  "oval-stone": "Piedra Oval",
+  "kings-rock": "Roca del Rey",
+  "metal-coat": "Rev. Metálico",
+  "dragon-scale": "Escama Dragón",
+  "up-grade": "Mejora",
+  "dubious-disc": "Disco Extraño",
+  protector: "Protector",
+  electirizer: "Electrizador",
+  magmarizer: "Magmatizador",
+  "razor-claw": "Garra Afilada",
+  "razor-fang": "Colmillo Agudo",
+  "prism-scale": "Escama Bella",
+  "reaper-cloth": "Tela Terrible",
+  "deep-sea-tooth": "Diente Marino",
+  "deep-sea-scale": "Escama Marina",
+  sachet: "Saquito Fragante",
+  "whipped-dream": "Dulce de Nata",
+  "cracked-pot": "Tetera Agrietada",
+  "chipped-pot": "Tetera Rota",
+  "sweet-apple": "Manzana Dulce",
+  "tart-apple": "Manzana Ácida",
+  "galarica-cuff": "Brazal Galanuez",
+  "galarica-wreath": "Corona Galanuez",
+  "black-augurite": "Mineral Negro",
+  "peat-block": "Bloque de Turba",
+  "auspicious-armor": "Armadura Auspiciosa",
+  "malicious-armor": "Armadura Maldita",
+  "leaders-crest": "Emblema del Jefe",
+  "scroll-of-darkness": "Manuscrito Sombras",
+  "scroll-of-waters": "Manuscrito Aguas",
+};
+
+export function evolutionItemLabel(name: string): string {
+  return EVOLUTION_ITEM_LABELS_ES[name] ?? prettifyName(name);
+}

@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { MAX_BASE_STAT, STAT_LABELS_ES } from "@/lib/pokedex/constants";
 import type { StatValue } from "@/lib/pokedex/types";
 
@@ -10,6 +7,11 @@ interface StatBarsProps {
   accent: string;
 }
 
+/**
+ * Base-stat bars animated with the shared CSS `animate-meter` keyframe (same
+ * as the comparator) — no client JS or animation library needed, so this
+ * renders on the server and framer-motion stays out of the bundle.
+ */
 export function StatBars({ stats, total, accent }: StatBarsProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -24,12 +26,13 @@ export function StatBars({ stats, total, accent }: StatBarsProps) {
               {stat.base}
             </span>
             <div className="bg-muted h-2.5 overflow-hidden rounded-full">
-              <motion.div
-                className="h-full rounded-full"
-                style={{ backgroundColor: accent }}
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.7, delay: index * 0.06, ease: "easeOut" }}
+              <div
+                className="animate-meter h-full rounded-full"
+                style={{
+                  ["--fill" as string]: `${pct}%`,
+                  backgroundColor: accent,
+                  animationDelay: `${index * 60}ms`,
+                }}
               />
             </div>
           </div>

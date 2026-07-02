@@ -12,10 +12,12 @@ import {
   pokemonSchema,
   pokemonSpeciesSchema,
   type ChainLink,
+  type EvolutionDetail,
 } from "@/lib/pokeapi/schemas";
 import { normalizeSearch, prettifyName } from "@/lib/utils";
-import { POKEMON_TYPES, STAT_ORDER } from "./constants";
-import { VERSION_ORDER } from "./labels";
+import { POKEMON_TYPES, STAT_ORDER, TYPE_LABELS_ES } from "./constants";
+import { evolutionItemLabel, locationLabel, VERSION_ORDER } from "./labels";
+import type { PokemonTypeName as TypeName } from "./types";
 import type {
   EvolutionNode,
   FlavorEntry,
@@ -28,10 +30,47 @@ import type {
 const REVALIDATE = Number(process.env.POKEAPI_REVALIDATE_SECONDS ?? 86_400);
 const KNOWN_TYPES = new Set<string>(POKEMON_TYPES);
 
+/** Compose a compact Spanish label for how a link evolves from its parent. */
+function evolutionMethodLabel(details: EvolutionDetail[] | undefined): string | null {
+  const d = details?.[0];
+  if (!d) return null;
+  const trigger = d.trigger?.name ?? "level-up";
+
+  if (trigger === "use-item" && d.item) return evolutionItemLabel(d.item.name);
+  if (trigger === "trade") {
+    if (d.held_item) return `Intercambio con ${evolutionItemLabel(d.held_item.name)}`;
+    if (d.trade_species) return `Intercambio por ${prettifyName(d.trade_species.name)}`;
+    return "Intercambio";
+  }
+  if (trigger === "shed") return "Nivel 20 (hueco en el equipo)";
+  if (trigger === "three-critical-hits") return "3 críticos en un combate";
+
+  if (trigger === "level-up") {
+    const parts: string[] = [];
+    if (d.min_level != null) parts.push(`Nivel ${d.min_level}`);
+    if (d.min_happiness != null) parts.push("Amistad alta");
+    if (d.min_affection != null) parts.push("Cariño alto");
+    if (d.min_beauty != null) parts.push("Belleza alta");
+    if (d.known_move_type)
+      parts.push(`mov. de tipo ${TYPE_LABELS_ES[d.known_move_type.name as TypeName] ?? prettifyName(d.known_move_type.name)}`);
+    else if (d.known_move) parts.push(`sabiendo ${prettifyName(d.known_move.name)}`);
+    if (d.held_item) parts.push(`equipando ${evolutionItemLabel(d.held_item.name)}`);
+    if (d.location) parts.push(`en ${locationLabel(d.location.name)}`);
+    if (d.time_of_day === "day") parts.push("de día");
+    if (d.time_of_day === "night") parts.push("de noche");
+    if (d.needs_overworld_rain) parts.push("con lluvia");
+    return parts.length > 0 ? parts.join(", ") : "Subir de nivel";
+  }
+
+  // Hisui styles, Gimmighoul coins, etc. — keep it honest and generic.
+  return "Método especial";
+}
+
 function toEvolutionNode(link: ChainLink): EvolutionNode {
   return {
     id: idFromUrl(link.species.url),
     name: link.species.name,
+    method: evolutionMethodLabel(link.evolution_details),
     children: link.evolves_to.map(toEvolutionNode),
   };
 }

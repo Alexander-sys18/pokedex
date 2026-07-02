@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { PokemonArtwork } from "@/components/pokemon/pokemon-artwork";
+import { LinkPending } from "@/components/ui/link-pending";
 import type { EvolutionNode } from "@/lib/pokedex/types";
 import { cn, formatDexNumber, prettifyName } from "@/lib/utils";
 
@@ -45,14 +46,23 @@ function EvolutionBranch({
     <div className="flex items-center gap-2 sm:gap-4">
       <EvolutionNodeChip node={node} currentId={currentId} accent={accent} />
       {node.children.length > 0 ? (
-        <>
-          <ChevronRight className="text-muted-foreground size-5 shrink-0" aria-hidden />
-          <div className="flex flex-col gap-3">
-            {node.children.map((child) => (
-              <EvolutionBranch key={child.id} node={child} currentId={currentId} accent={accent} />
-            ))}
-          </div>
-        </>
+        <div className="flex flex-col gap-3">
+          {node.children.map((child) => (
+            <div key={child.id} className="flex items-center gap-2 sm:gap-4">
+              {/* Each branch gets its own arrow + evolution method (how the
+                  child evolves from THIS node: level, stone, friendship…). */}
+              <div className="flex w-20 shrink-0 flex-col items-center gap-0.5 sm:w-24">
+                <ChevronRight className="text-muted-foreground size-5" aria-hidden />
+                {child.method ? (
+                  <span className="text-muted-foreground text-center text-[0.62rem] leading-tight">
+                    {child.method}
+                  </span>
+                ) : null}
+              </div>
+              <EvolutionBranch node={child} currentId={currentId} accent={accent} />
+            </div>
+          ))}
+        </div>
       ) : null}
     </div>
   );
@@ -104,6 +114,7 @@ function EvolutionNodeChip({
       <span className="text-foreground text-center text-xs font-semibold">
         {prettifyName(node.name)}
       </span>
+      <LinkPending />
     </Link>
   );
 }

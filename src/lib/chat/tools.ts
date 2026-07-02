@@ -92,7 +92,7 @@ export interface ToolResult {
 }
 
 /** Resolve a name-or-id string to a national dex id using the prebuilt index. */
-async function resolveId(nameOrId: string): Promise<number | null> {
+export async function resolveId(nameOrId: string): Promise<number | null> {
   const trimmed = nameOrId.trim();
   // Accept dex formats the app itself displays: "25", "#25", "025", "#0025".
   const numeric = trimmed.replace(/^#/, "").replace(/^0+(?=\d)/, "");

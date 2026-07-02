@@ -16,7 +16,7 @@ de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable co
 ## 🔗 Demo y repositorio
 
 - **Demo online:** _<añade aquí la URL de Render tras el despliegue, p. ej. `https://pokedex.onrender.com`>_
-- **Repositorio:** _<URL del repo público de GitHub>_
+- **Repositorio:** [github.com/Alexander-sys18/pokedex](https://github.com/Alexander-sys18/pokedex)
 
 > Alternativa sin desplegar nada: **`docker compose up --build`** y abre `http://localhost:3000`.
 

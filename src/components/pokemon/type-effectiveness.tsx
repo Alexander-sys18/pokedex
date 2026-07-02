@@ -127,7 +127,7 @@ export function TypeEffectiveness({
             </span>
             <span className="text-foreground text-sm font-semibold">Ofensiva</span>
             <span className="text-muted-foreground text-xs">
-              con sus propios tipos golpea super efectivo (×2) a
+              con sus propios tipos golpea súper efectivo (×2) a
             </span>
           </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5 pl-11">

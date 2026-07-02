@@ -220,7 +220,9 @@ function CardGallery({
         className="animate-zoom-in max-h-[78vh] max-w-[88vw] rounded-xl object-contain shadow-2xl sm:max-h-[82vh]"
       />
 
+      {/* role="status": paging announces "Pikachu · cel25-5, 3 / 10". */}
       <div
+        role="status"
         onClick={(event) => event.stopPropagation()}
         className="flex max-w-[92vw] flex-col items-center gap-0.5 text-center"
       >
@@ -269,9 +271,8 @@ export function TcgCards({ cards }: { cards: TcgCard[] }) {
             >
               <CardThumb card={card} />
             </button>
-            <figcaption className="text-muted-foreground mt-1.5 truncate text-center font-mono text-[0.65rem]">
-              {card.id}
-            </figcaption>
+            {/* The catalog id lives in the viewer + aria-label; raw ids under
+                every thumbnail read like debug output. */}
           </figure>
         ))}
       </div>

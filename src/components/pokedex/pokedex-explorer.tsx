@@ -91,8 +91,12 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
     <div ref={rootRef} className="flex scroll-mt-20 flex-col gap-5">
       <FiltersBar state={state} favoritesCount={favoriteIds.length} resultsCount={results.length} />
 
+      {/* Screen readers need a heading between the page h1 and the card h3s. */}
+      <h2 className="sr-only">Listado de Pokémon</h2>
+
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p className="text-muted-foreground text-sm">
+        {/* Live region: filter/search result counts are announced. */}
+        <p role="status" className="text-muted-foreground text-sm">
           <span className="text-foreground font-semibold">{results.length}</span> Pokémon
           {filtersActive ? <span> de {entries.length}</span> : <span> en la Pokédex</span>}
           {results.length > 0 ? (

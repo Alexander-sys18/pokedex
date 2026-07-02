@@ -180,9 +180,7 @@ async function detallePokemon(input: Record<string, unknown>): Promise<ToolResul
     total_estadisticas: detail.statTotal,
     altura_m: detail.heightMeters,
     peso_kg: detail.weightKilograms,
-    habilidades: detail.abilities.map((a) =>
-      a.hidden ? `${prettifyName(a.name)} (oculta)` : prettifyName(a.name),
-    ),
+    habilidades: detail.abilities.map((a) => (a.hidden ? `${a.name} (oculta)` : a.name)),
     es_legendario: detail.isLegendary,
     es_singular: detail.isMythical,
     ratio_captura: detail.captureRate !== null ? `${detail.captureRate}/255` : null,

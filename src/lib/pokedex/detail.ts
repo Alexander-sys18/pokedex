@@ -9,6 +9,7 @@ import {
 import {
   encountersSchema,
   evolutionChainSchema,
+  localizedNamesSchema,
   pokemonSchema,
   pokemonSpeciesSchema,
   type ChainLink,
@@ -150,6 +151,31 @@ function orderStats(stats: { base_stat: number; stat: { name: string } }[]): Sta
 }
 
 /**
+ * Localized display name for an ability/item ("static" → "Elec. Estática").
+ * Pure enrichment: any failure falls back to the prettified English slug.
+ */
+async function localizedResourceName(path: string, fallbackSlug: string): Promise<string> {
+  try {
+    const data = await pokeFetch(path, localizedNamesSchema, { revalidate: REVALIDATE });
+    return (
+      data.names.find((n) => n.language.name === "es")?.name ??
+      data.names.find((n) => n.language.name === "en")?.name ??
+      prettifyName(fallbackSlug)
+    );
+  } catch {
+    return prettifyName(fallbackSlug);
+  }
+}
+
+/** Variety slugs need a couple of Spanish/typographic fixes on top of the
+ *  generic prettifier ("eevee-gmax" → "Eevee Gigamax", not "Eevee Gmax"). */
+function prettifyVariety(slug: string): string {
+  return prettifyName(slug)
+    .replace(/\bGmax\b/, "Gigamax")
+    .replace(/\bPhd\b/, "PhD");
+}
+
+/**
  * Fetch everything the detail page needs, live from PokéAPI (ISR-cached).
  * Returns `null` for an unknown id so the page can render a 404.
  *
@@ -186,6 +212,21 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
     const stats = orderStats(pokemon.stats);
     const description = pickDescription(species.flavor_text_entries);
 
+    // Spanish names for abilities and wild held items — the rest of the sheet
+    // is fully localized, so these shouldn't be the exception.
+    const [abilityNames, heldItemNames] = await Promise.all([
+      Promise.all(
+        pokemon.abilities.map((a) =>
+          localizedResourceName(`/ability/${a.ability.name}`, a.ability.name),
+        ),
+      ),
+      Promise.all(
+        (pokemon.held_items ?? []).map((h) =>
+          localizedResourceName(`/item/${h.item.name}`, h.item.name),
+        ),
+      ),
+    ]);
+
     const genera = species.genera ?? [];
     const names = species.names ?? [];
 
@@ -200,8 +241,8 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
       statTotal: stats.reduce((sum, s) => sum + s.base, 0),
       heightMeters: pokemon.height / 10,
       weightKilograms: pokemon.weight / 10,
-      abilities: pokemon.abilities.map((a) => ({
-        name: a.ability.name,
+      abilities: pokemon.abilities.map((a, index) => ({
+        name: abilityNames[index] ?? prettifyName(a.ability.name),
         hidden: a.is_hidden,
       })),
       description,
@@ -228,7 +269,7 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
       evYield: pokemon.stats
         .filter((s) => s.effort > 0)
         .map((s) => ({ name: s.stat.name, value: s.effort })),
-      heldItems: (pokemon.held_items ?? []).map((h) => prettifyName(h.item.name)),
+      heldItems: heldItemNames,
 
       eggGroups: (species.egg_groups ?? []).map((g) => g.name),
       genderRate: species.gender_rate ?? null,
@@ -245,7 +286,7 @@ export const getPokemonDetail = cache(async (id: number): Promise<PokemonDetail 
       encounters: groupEncounters(rawEncounters),
       varieties: (species.varieties ?? [])
         .filter((v) => !v.is_default)
-        .map((v) => ({ id: idFromUrl(v.pokemon.url), name: prettifyName(v.pokemon.name) })),
+        .map((v) => ({ id: idFromUrl(v.pokemon.url), name: prettifyVariety(v.pokemon.name) })),
     };
   } catch (error) {
     if (error instanceof NonRetryableHttpError && error.status === 404) {

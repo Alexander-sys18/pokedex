@@ -291,7 +291,7 @@ export function ComparisonView({ a, b }: { a: PokemonDetail; b: PokemonDetail })
             }
           />
           <AttrRow
-            label="Ratio captura"
+            label="Ratio de captura"
             a={a.captureRate !== null ? `${a.captureRate}/255` : "—"}
             b={b.captureRate !== null ? `${b.captureRate}/255` : "—"}
             delta={

@@ -12,6 +12,11 @@ export const namedResourceSchema = z.object({
 });
 export type NamedResource = z.infer<typeof namedResourceSchema>;
 
+/** `/ability/{slug}`, `/item/{slug}` — only the localized display names. */
+export const localizedNamesSchema = z.object({
+  names: z.array(z.object({ name: z.string(), language: namedResourceSchema })),
+});
+
 /** `/generation/{id}` — used to map species → generation. */
 export const generationSchema = z.object({
   id: z.number(),

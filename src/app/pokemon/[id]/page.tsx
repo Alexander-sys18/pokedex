@@ -35,7 +35,7 @@ import {
   generationLabel,
 } from "@/lib/pokedex/constants";
 import { getPokemonDetail } from "@/lib/pokedex/detail";
-import { pixelSprite } from "@/lib/pokedex/image";
+import { officialArtwork, pixelSprite } from "@/lib/pokedex/image";
 import { professorNotes } from "@/lib/pokedex/oak-notes";
 import {
   colorLabel,
@@ -79,13 +79,24 @@ const numberFormat = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const parsed = parseId((await params).id);
-  if (!parsed) return { title: "Pokémon no encontrado" };
+  // notFound() here (before the page shell streams) yields a REAL 404 status
+  // for /pokemon/abc or /pokemon/9999, not a soft-404 with HTTP 200.
+  if (!parsed) notFound();
   // Deduped with the page render via React cache() — a single PokéAPI fetch.
   const detail = await getPokemonDetail(parsed);
-  if (!detail) return { title: "Pokémon no encontrado" };
+  if (!detail) notFound();
+  const title = `${prettifyName(detail.name)} ${formatDexNumber(detail.id)}`;
+  const description = detail.description ?? undefined;
   return {
-    title: `${prettifyName(detail.name)} ${formatDexNumber(detail.id)}`,
-    description: detail.description ?? undefined,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      // Official artwork as the share card — each Pokémon previews itself.
+      images: [{ url: officialArtwork(detail.id), width: 475, height: 475 }],
+    },
   };
 }
 
@@ -197,7 +208,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
               />
               <MetaTile
                 icon={<Egg className="size-4" />}
-                label="Ratio captura"
+                label="Ratio de captura"
                 value={detail.captureRate !== null ? `${detail.captureRate}/255` : "—"}
               />
             </div>
@@ -324,7 +335,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
                       ability.hidden && "border-dashed",
                     )}
                   >
-                    {prettifyName(ability.name)}
+                    {ability.name}
                     {ability.hidden ? (
                       <span className="text-muted-foreground"> · oculta</span>
                     ) : null}
@@ -527,7 +538,8 @@ function GenderBar({ rate }: { rate: number | null }) {
 }
 
 function formatPercentLocal(value: number): string {
-  return `${Number.isInteger(value) ? value : value.toFixed(1)}%`;
+  // Same es-ES locale as height/weight — "87,5%", not "87.5%".
+  return `${numberFormat.format(value)}%`;
 }
 
 function LoreBadge({

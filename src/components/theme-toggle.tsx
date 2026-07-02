@@ -41,7 +41,9 @@ export function ThemeToggle() {
 
   return (
     <div
-      role="radiogroup"
+      // A group of toggle buttons (aria-pressed), NOT a radiogroup: radios
+      // promise arrow-key navigation, which plain buttons don't implement.
+      role="group"
       aria-label="Cambiar tema"
       className="border-border bg-surface inline-flex items-center gap-0.5 rounded-full border p-0.5"
     >
@@ -51,8 +53,7 @@ export function ThemeToggle() {
           <button
             key={value}
             type="button"
-            role="radio"
-            aria-checked={active}
+            aria-pressed={active}
             aria-label={label}
             title={label}
             onClick={() => setTheme(value)}

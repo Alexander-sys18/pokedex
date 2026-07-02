@@ -142,7 +142,11 @@ function fillFromPool(
 
 /** Capability probe used by the client to decide whether to show the panel. */
 export function GET() {
-  return Response.json({ enabled: Boolean(process.env.ANTHROPIC_API_KEY) });
+  return Response.json(
+    { enabled: Boolean(process.env.ANTHROPIC_API_KEY) },
+    // The answer only changes on redeploy — spare a request per page load.
+    { headers: { "Cache-Control": "public, max-age=300" } },
+  );
 }
 
 export async function POST(req: Request) {

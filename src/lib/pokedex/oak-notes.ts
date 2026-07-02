@@ -14,10 +14,11 @@ export function professorNotes(detail: PokemonDetail): string {
   const types = detail.types.map((t) => TYPE_LABELS_ES[t]).join("/");
   const sentences: string[] = [];
 
-  // Identity + origin.
-  const genus = detail.genus ? `, ${detail.genus.toLowerCase()},` : "";
+  // Identity + origin. The genus keeps its official capitalization
+  // ("el Pokémon Evolución"), matching the chip shown in the hero.
+  const genus = detail.genus ? `, ¡el ${detail.genus}!` : "!";
   sentences.push(
-    `¡Ah, ${name}! Este Pokémon de tipo ${types}${genus} quedó registrado por primera vez en la región de ${GENERATION_REGIONS[detail.generation]} (${generationLabel(detail.generation)}).`,
+    `¡Ah, ${name}${genus} Este ejemplar de tipo ${types} quedó registrado por primera vez en la región de ${GENERATION_REGIONS[detail.generation]} (${generationLabel(detail.generation)}).`,
   );
 
   // Combat profile: best stat + base total tier.

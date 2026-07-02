@@ -77,8 +77,8 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
           </h1>
 
           <p className="text-muted-foreground text-sm leading-relaxed sm:text-base">
-            Busca por nombre —incluyendo su cadena evolutiva—, filtra por tipo y generación, hazle
-            una foto a un Pokémon para identificarlo o pregúntale lo que quieras al asistente.
+            Busca cualquier Pokémon por nombre —incluida su cadena evolutiva—, filtra por tipo y
+            generación, hazle una foto para identificarlo o pregúntale lo que quieras al asistente.
           </p>
 
           <div className="flex flex-wrap gap-2">

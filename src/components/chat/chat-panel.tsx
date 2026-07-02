@@ -134,7 +134,13 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
         </div>
       </header>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      {/* role="log": streamed replies get announced by screen readers. */}
+      <div
+        ref={scrollRef}
+        role="log"
+        aria-live="polite"
+        className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+      >
         {messages.length === 0 ? (
           <div className="flex flex-col gap-3">
             {/* Oak greets you in person, RPG-style. */}
@@ -212,6 +218,9 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
               }
             }}
             rows={1}
+            // Same cap the API enforces (z.string().max(4000)) — without it,
+            // one oversized paste poisons the session with permanent 400s.
+            maxLength={4000}
             placeholder="Pregúntale al Profesor Oak…"
             aria-label="Pregúntale al Profesor Oak"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground focus-visible:border-border-strong focus-visible:ring-ring max-h-28 min-h-[2.5rem] flex-1 resize-none rounded-xl border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"

@@ -292,7 +292,7 @@ determinista por fecha como ancla visual — calculado **en el servidor** con IS
   pestañas) de hasta 6 miembros, con **análisis de tipos** calculado en el cliente con la misma
   tabla embebida — **debilidades compartidas** (alerta si 3+ miembros son débiles al mismo
   tipo), **resistencias** del conjunto y **cobertura ofensiva** (cuántos de los 18 tipos golpea
-  super efectivo y qué huecos quedan).
+  súper efectivo y qué huecos quedan).
 - **Armar equipo con IA**: describe en texto libre lo que quieres («el mejor equipo
   equilibrado», «un equipo alrededor de Charizard»…) y el **Profesor Oak propone los 6** con
   la razón de cada elección, vía **salida estructurada** (JSON Schema) de Claude. Cada nombre

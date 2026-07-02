@@ -129,8 +129,8 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
         <div className="border-border text-muted-foreground flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <Swords className="size-8 opacity-60" />
           <p className="max-w-md text-sm">
-            Añade hasta seis Pokémon y verás el análisis de tipos del equipo: debilidades
-            compartidas, resistencias y cobertura ofensiva. El equipo se guarda en tu navegador.
+            Elige tu primer Pokémon en el buscador de arriba — o pídele un equipo completo al
+            Profesor Oak y aplícalo con un toque.
           </p>
         </div>
       ) : (
@@ -188,7 +188,7 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
           <AnalysisPanel
             title="Cobertura ofensiva"
             icon={<Swords className="size-4 text-sky-500" />}
-            hint="Tipos contra los que el equipo pega super efectivo (según sus tipos STAB)."
+            hint="Tipos contra los que el equipo pega súper efectivo (según sus tipos STAB)."
           >
             <p className="text-foreground mb-2 text-sm">
               <span className="font-bold">{analysis.covered.length}</span>
@@ -199,7 +199,7 @@ export function TeamBuilder({ entries }: TeamBuilderProps) {
             </p>
             {analysis.gaps.length > 0 ? (
               <div>
-                <p className="text-muted-foreground mb-1.5 text-xs">Huecos (sin super efectivo):</p>
+                <p className="text-muted-foreground mb-1.5 text-xs">Huecos (sin súper efectivo):</p>
                 <div className="flex flex-wrap gap-1.5">
                   {analysis.gaps.map((type) => (
                     <span

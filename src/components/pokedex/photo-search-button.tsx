@@ -177,7 +177,11 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
       ) : null}
 
       {result ? (
-        <div className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-64 rounded-xl border p-3 shadow-[var(--shadow-card-hover)]">
+        // role="status": the async identification verdict gets announced.
+        <div
+          role="status"
+          className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-64 rounded-xl border p-3 shadow-[var(--shadow-card-hover)]"
+        >
           <button
             type="button"
             onClick={() => setResult(null)}

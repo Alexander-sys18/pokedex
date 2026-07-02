@@ -210,7 +210,7 @@ export function OakTeamAssistant({ entries }: { entries: PokedexEntry[] }) {
 
               {proposal.unresolved.length > 0 ? (
                 <p className="text-muted-foreground mt-2 text-xs">
-                  No encontré en la Pokédex: {proposal.unresolved.join(", ")}.
+                  No he encontrado en la Pokédex: {proposal.unresolved.join(", ")}.
                 </p>
               ) : null}
 
@@ -236,8 +236,16 @@ export function OakTeamAssistant({ entries }: { entries: PokedexEntry[] }) {
                   type="button"
                   disabled={applied === "new"}
                   onClick={() => {
-                    createTeam(proposal.name, ids);
-                    setApplied("new");
+                    // createTeam returns null at the 12-team cap — never show
+                    // a green "saved" confirmation for a save that didn't happen.
+                    if (createTeam(proposal.name, ids)) {
+                      setApplied("new");
+                      setError(null);
+                    } else {
+                      setError(
+                        "Has alcanzado el límite de 12 equipos guardados. Borra alguno para guardar este.",
+                      );
+                    }
                   }}
                   className={cn(
                     "border-border inline-flex h-9 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors",

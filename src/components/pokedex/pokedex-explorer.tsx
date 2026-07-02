@@ -49,22 +49,32 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
     [results, page],
   );
 
-  // Jump back to the top whenever the filters change (but not on the first
-  // render / when returning from a detail page — that state is restored).
+  // When the filters change, make sure the START of the results is visible —
+  // but never yank the viewport to the absolute top of the page: if the user
+  // is right there tweaking the filters, the screen must not move at all.
+  // (Skipped on the first render / back-navigation, where scroll is restored.)
+  const rootRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
       return;
     }
-    saveListScroll(0);
-    window.scrollTo({ top: 0 });
+    const root = rootRef.current;
+    if (root && root.getBoundingClientRect().top < 0) {
+      root.scrollIntoView({ block: "start" });
+    }
+    saveListScroll(window.scrollY);
   }, [filters.query, filters.type, filters.type2, filters.generation, filters.sort, favoritesOnly]);
 
   const goToPage = (next: number) => {
     state.setPage(next);
-    saveListScroll(0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Pagination lives at the bottom — glide back to the start of the list
+    // (not past the hero) so the new page reads from its first card.
+    const root = rootRef.current;
+    if (root && root.getBoundingClientRect().top < 0) {
+      root.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
   };
 
   const filtersActive = hasActiveFilters(filters) || favoritesOnly;
@@ -74,7 +84,8 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
   const rangeEnd = Math.min(page * PAGE_SIZE, results.length);
 
   return (
-    <div className="flex flex-col gap-5">
+    // scroll-mt clears the sticky header when we scrollIntoView this anchor.
+    <div ref={rootRef} className="flex scroll-mt-20 flex-col gap-5">
       <FiltersBar state={state} favoritesCount={favoriteIds.length} />
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

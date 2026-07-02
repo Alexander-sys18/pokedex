@@ -79,6 +79,25 @@ export function defensiveEffectiveness(
   return result;
 }
 
+/**
+ * For each of the 18 defending types, the BEST damage multiplier the given
+ * attacking types can land on it (single-type target). Powers a team's
+ * offensive coverage: a defender type is "covered" when its best value is ≥ 2.
+ */
+export function offensiveCoverage(
+  attackerTypes: readonly PokemonTypeName[],
+): Map<PokemonTypeName, number> {
+  const result = new Map<PokemonTypeName, number>();
+  for (const defender of POKEMON_TYPES) {
+    let best = 0;
+    for (const attacker of attackerTypes) {
+      best = Math.max(best, CHART[attacker][defender] ?? 1);
+    }
+    result.set(defender, best);
+  }
+  return result;
+}
+
 export interface DefensiveGroups {
   /** ×4 — double weakness. */
   x4: PokemonTypeName[];

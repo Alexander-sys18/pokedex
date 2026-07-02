@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { POKEMON_TYPES } from "./constants";
 import { defensiveEffectiveness, defensiveGroups } from "./type-chart";
+import type { PokemonTypeName } from "./types";
+
+const mult = (defenders: PokemonTypeName[], attacker: PokemonTypeName): number =>
+  defensiveEffectiveness(defenders).get(attacker)!;
 
 describe("defensiveEffectiveness", () => {
   it("computes Charizard (fire/flying) matchups", () => {
@@ -51,5 +56,41 @@ describe("defensiveGroups", () => {
       ...groups.zero,
     ];
     expect(bucketed.sort()).toEqual(["fighting", "ghost"]);
+  });
+});
+
+describe("official immunities (the six ×0 rules)", () => {
+  it("matches the canonical Gen VI+ immunity list", () => {
+    expect(mult(["ghost"], "normal")).toBe(0);
+    expect(mult(["ghost"], "fighting")).toBe(0);
+    expect(mult(["normal"], "ghost")).toBe(0);
+    expect(mult(["flying"], "ground")).toBe(0);
+    expect(mult(["ground"], "electric")).toBe(0);
+    expect(mult(["dark"], "psychic")).toBe(0);
+    expect(mult(["steel"], "poison")).toBe(0);
+    expect(mult(["fairy"], "dragon")).toBe(0);
+  });
+});
+
+describe("chart integrity across all 18 types", () => {
+  it("only ever produces the six legal multipliers", () => {
+    const legal = new Set([0, 0.25, 0.5, 1, 2, 4]);
+    for (const a of POKEMON_TYPES) {
+      for (const b of POKEMON_TYPES) {
+        expect(legal.has(mult([a], b))).toBe(true); // single type
+        expect(legal.has(mult([a, b], b))).toBe(true); // dual type
+      }
+    }
+  });
+
+  it("bucketing agrees with the raw multiplier for every typing", () => {
+    for (const type of POKEMON_TYPES) {
+      const g = defensiveGroups([type]);
+      const listed = new Set([...g.x4, ...g.x2, ...g.half, ...g.quarter, ...g.zero]);
+      for (const attacker of POKEMON_TYPES) {
+        const m = mult([type], attacker);
+        expect(listed.has(attacker)).toBe(m !== 1);
+      }
+    }
   });
 });

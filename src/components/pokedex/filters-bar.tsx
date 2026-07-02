@@ -14,6 +14,7 @@ import { hasActiveFilters, type SortKey } from "@/lib/pokedex/search";
 import type { GenerationNumber, PokemonTypeName } from "@/lib/pokedex/types";
 import type { FilterState } from "@/lib/url-state";
 import { cn } from "@/lib/utils";
+import { FiltersSheet } from "./filters-sheet";
 import { PhotoSearchButton } from "./photo-search-button";
 import { SearchInput } from "./search-input";
 
@@ -50,9 +51,48 @@ interface FiltersBarProps {
   state: FilterState;
   /** Number of saved favorites, shown on the toggle. */
   favoritesCount: number;
+  /** Live result count (feeds the mobile sheet's "see results" button). */
+  resultsCount: number;
 }
 
-export function FiltersBar({ state, favoritesCount }: FiltersBarProps) {
+/** Favorites toggle, shared by the desktop row and the mobile row. */
+function FavoritesToggle({
+  favoritesOnly,
+  favoritesCount,
+  onToggle,
+  className,
+}: {
+  favoritesOnly: boolean;
+  favoritesCount: number;
+  onToggle: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={favoritesOnly}
+      className={cn(
+        "inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors",
+        "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+        favoritesOnly
+          ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
+          : "border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+        className,
+      )}
+    >
+      <Heart className={cn("size-3.5", favoritesOnly && "fill-rose-500")} />
+      Favoritos
+      {favoritesCount > 0 ? (
+        <span className="rounded-full bg-rose-500/15 px-1.5 text-[0.7rem] font-semibold text-rose-500">
+          {favoritesCount}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
+export function FiltersBar({ state, favoritesCount, resultsCount }: FiltersBarProps) {
   const { filters, favoritesOnly, setQuery, setType, setType2, setGeneration, setSort, setFavoritesOnly, reset } =
     state;
   const showReset = hasActiveFilters(filters) || favoritesOnly || filters.sort !== "dex-asc";
@@ -64,7 +104,30 @@ export function FiltersBar({ state, favoritesCount }: FiltersBarProps) {
         <PhotoSearchButton onIdentified={setQuery} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Mobile: everything readable behind a "Filtros" bottom sheet. */}
+      <div className="flex items-center gap-2 sm:hidden">
+        <FiltersSheet state={state} resultsCount={resultsCount} className="flex-1" />
+        <FavoritesToggle
+          favoritesOnly={favoritesOnly}
+          favoritesCount={favoritesCount}
+          onToggle={() => setFavoritesOnly(!favoritesOnly)}
+          className="flex-1"
+        />
+        {showReset ? (
+          <button
+            type="button"
+            onClick={reset}
+            aria-label="Limpiar filtros y búsqueda"
+            title="Limpiar filtros y búsqueda"
+            className="border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground focus-visible:ring-ring grid size-10 shrink-0 place-items-center rounded-xl border transition-colors focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <RotateCcw className="size-4" />
+          </button>
+        ) : null}
+      </div>
+
+      {/* Desktop: the full inline filter row. */}
+      <div className="hidden flex-wrap items-center gap-2 sm:flex">
         <Select
           ariaLabel="Filtrar por tipo"
           icon={<Tag className="size-4" />}
@@ -96,26 +159,11 @@ export function FiltersBar({ state, favoritesCount }: FiltersBarProps) {
           options={SORT_OPTIONS}
         />
 
-        <button
-          type="button"
-          onClick={() => setFavoritesOnly(!favoritesOnly)}
-          aria-pressed={favoritesOnly}
-          className={cn(
-            "inline-flex h-10 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-medium transition-colors",
-            "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
-            favoritesOnly
-              ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
-              : "border-border bg-surface text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-          )}
-        >
-          <Heart className={cn("size-3.5", favoritesOnly && "fill-rose-500")} />
-          Favoritos
-          {favoritesCount > 0 ? (
-            <span className="bg-rose-500/15 text-rose-500 rounded-full px-1.5 text-[0.7rem] font-semibold">
-              {favoritesCount}
-            </span>
-          ) : null}
-        </button>
+        <FavoritesToggle
+          favoritesOnly={favoritesOnly}
+          favoritesCount={favoritesCount}
+          onToggle={() => setFavoritesOnly(!favoritesOnly)}
+        />
 
         {showReset ? (
           <button

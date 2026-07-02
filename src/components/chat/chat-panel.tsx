@@ -140,7 +140,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
               <div className="oak-float relative size-24">
                 <div
                   className="type-aura absolute inset-0 rounded-full"
-                  style={{ ["--type" as string]: "#6366f1" }}
+                  style={{ ["--type" as string]: "#3b82f6" }}
                   aria-hidden
                 />
                 <Image
@@ -274,7 +274,7 @@ function ChatBubble({
             <Link
               key={p.id}
               href={`/pokemon/${p.id}`}
-              className="border-border bg-background/50 text-foreground hover:bg-muted rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              className="border-border bg-background/50 text-foreground hover:bg-muted inline-flex h-6 items-center rounded-full border px-2.5 text-xs font-medium transition-colors"
             >
               {p.name}
             </Link>

@@ -161,7 +161,7 @@ export function OakTeamAssistant({ entries }: { entries: PokedexEntry[] }) {
                   void ask(example);
                 }}
                 disabled={loading}
-                className="border-border text-muted-foreground hover:bg-muted hover:text-foreground rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-50"
+                className="border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-7 items-center rounded-full border px-2.5 text-xs transition-colors disabled:opacity-50"
               >
                 {example}
               </button>

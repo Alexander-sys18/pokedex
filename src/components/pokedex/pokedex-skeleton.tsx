@@ -4,7 +4,12 @@ export function PokedexSkeleton() {
     <div className="flex flex-col gap-5" aria-hidden>
       <div className="flex flex-col gap-3">
         <div className="bg-muted h-11 w-full animate-pulse rounded-xl" />
-        <div className="flex flex-wrap gap-2">
+        {/* Mobile: "Filtros" + "Favoritos" halves; desktop: the select row. */}
+        <div className="flex gap-2 sm:hidden">
+          <div className="bg-muted h-10 flex-1 animate-pulse rounded-xl" />
+          <div className="bg-muted h-10 flex-1 animate-pulse rounded-xl" />
+        </div>
+        <div className="hidden flex-wrap gap-2 sm:flex">
           <div className="bg-muted h-10 w-40 animate-pulse rounded-xl" />
           <div className="bg-muted h-10 w-52 animate-pulse rounded-xl" />
           <div className="bg-muted h-10 w-44 animate-pulse rounded-xl" />
@@ -13,7 +18,7 @@ export function PokedexSkeleton() {
 
       <div className="bg-muted h-4 w-32 animate-pulse rounded" />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {Array.from({ length: 18 }).map((_, index) => (
           <div
             key={index}

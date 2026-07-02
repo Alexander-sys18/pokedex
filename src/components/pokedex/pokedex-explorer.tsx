@@ -1,8 +1,9 @@
 "use client";
 
-import { Heart, SearchX } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
 import { useFavoriteIds } from "@/lib/favorites";
+import { pixelSprite } from "@/lib/pokedex/image";
 import { applyFilters, hasActiveFilters, toSearchable } from "@/lib/pokedex/search";
 import type { PokedexEntry } from "@/lib/pokedex/types";
 import { saveListScroll } from "@/lib/scroll-store";
@@ -86,7 +87,11 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
   return (
     // scroll-mt clears the sticky header when we scrollIntoView this anchor.
     <div ref={rootRef} className="flex scroll-mt-20 flex-col gap-5">
-      <FiltersBar state={state} favoritesCount={favoriteIds.length} />
+      <FiltersBar
+        state={state}
+        favoritesCount={favoriteIds.length}
+        resultsCount={results.length}
+      />
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="text-muted-foreground text-sm">
@@ -120,8 +125,16 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
         </>
       ) : favoritesOnly && favoriteIds.length === 0 ? (
         <div className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-4 py-12 text-center">
-          <div className="bg-muted grid size-14 place-items-center rounded-full text-rose-500">
-            <Heart className="size-7" />
+          {/* An Eevee waiting to be someone's favorite. */}
+          <div className="bg-muted grid size-16 place-items-center rounded-full">
+            <Image
+              src={pixelSprite(133)}
+              alt=""
+              width={44}
+              height={44}
+              unoptimized
+              className="[image-rendering:pixelated]"
+            />
           </div>
           <div className="space-y-1">
             <p className="text-foreground font-semibold">Aún no tienes favoritos</p>
@@ -139,8 +152,16 @@ export function PokedexExplorer({ entries }: PokedexExplorerProps) {
         </div>
       ) : (
         <div className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-4 py-12 text-center">
-          <div className="bg-muted text-muted-foreground grid size-14 place-items-center rounded-full">
-            <SearchX className="size-7" />
+          {/* A confused Psyduck: nothing matched. */}
+          <div className="bg-muted grid size-16 place-items-center rounded-full">
+            <Image
+              src={pixelSprite(54)}
+              alt=""
+              width={44}
+              height={44}
+              unoptimized
+              className="[image-rendering:pixelated]"
+            />
           </div>
           <div className="space-y-1">
             <p className="text-foreground font-semibold">Ningún Pokémon coincide</p>

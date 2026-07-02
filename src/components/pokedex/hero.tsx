@@ -41,17 +41,17 @@ function PokeballWatermark({ className }: { className?: string }) {
 export function PokedexHero({ featured, facts }: PokedexHeroProps) {
   const color = primaryTypeColor(featured.types);
 
-  // Each fact gets its own color — the hero should feel alive, not gray.
+  // Each fact gets its own color from the Pokémon palette (red/blue/amber/green).
   const factChips = [
     {
       icon: LayoutGrid,
       label: `${facts.pokemon} Pokémon`,
-      tone: "border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300",
+      tone: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-300",
     },
     {
       icon: Network,
       label: `${facts.families} familias evolutivas`,
-      tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+      tone: "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-300",
     },
     {
       icon: Layers,
@@ -61,7 +61,7 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
     {
       icon: Tag,
       label: `${facts.types} tipos`,
-      tone: "border-pink-500/30 bg-pink-500/10 text-pink-600 dark:text-pink-300",
+      tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
     },
   ];
 
@@ -99,10 +99,12 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
             ))}
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2">
+          {/* Mobile: aligned grid (primary full-width, secondaries as equal
+              halves). From sm: the usual inline row. */}
+          <div className="mt-1 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Link
               href="/comparar"
-              className="focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 text-sm font-medium text-white shadow-md shadow-indigo-500/25 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
+              className="focus-visible:ring-ring col-span-2 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 px-4 text-sm font-medium text-white shadow-md shadow-red-500/25 transition-opacity [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
             >
               <GitCompareArrows className="size-4" />
               Comparar Pokémon
@@ -110,41 +112,44 @@ export function PokedexHero({ featured, facts }: PokedexHeroProps) {
             </Link>
             <Link
               href="/equipo"
-              className="border-border bg-surface/80 text-foreground hover:bg-surface-hover focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="border-border bg-surface/80 text-foreground hover:bg-surface-hover focus-visible:ring-ring inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:outline-none sm:gap-2 sm:px-4 sm:text-sm"
             >
-              <Swords className="size-4" />
-              Armar mi equipo
+              <Swords className="size-4 shrink-0" />
+              {/* Short label in the narrow half-width cell on phones. */}
+              <span className="sm:hidden">Mi equipo</span>
+              <span className="hidden sm:inline">Armar mi equipo</span>
               <LinkPending mode="inline" />
             </Link>
-            <SurpriseButton />
+            <SurpriseButton className="justify-center gap-1.5 px-2.5 text-xs whitespace-nowrap sm:gap-2 sm:px-4 sm:text-sm" />
           </div>
         </div>
 
-        {/* Pokémon of the day — the hero's visual anchor. */}
+        {/* Pokémon of the day — no box: the artwork itself is the visual
+            anchor, floating over its circular type-colored aura. */}
         <Link
           href={`/pokemon/${featured.id}`}
-          className="group border-border bg-surface/70 hover:border-border-strong hover:bg-surface-hover focus-visible:ring-ring relative mx-auto flex w-full max-w-70 flex-col items-center gap-2 rounded-2xl border p-5 text-center backdrop-blur transition-colors focus-visible:ring-2 focus-visible:outline-none md:mx-0 md:w-64"
+          className="group focus-visible:ring-ring relative mx-auto flex w-full max-w-72 flex-col items-center gap-1.5 rounded-3xl text-center focus-visible:ring-2 focus-visible:outline-none md:mx-0 md:w-72"
         >
-          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-medium">
+          <span className="border-border bg-surface/70 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur">
             <Star className="size-3.5 text-amber-500" aria-hidden />
             Pokémon del día
           </span>
 
-          <div className="oak-float relative aspect-square w-full max-w-44">
-            <div className="type-aura absolute inset-0 rounded-full" aria-hidden />
+          <div className="oak-float relative aspect-square w-full max-w-52 sm:max-w-56">
+            <div className="type-aura absolute inset-2 rounded-full" aria-hidden />
             <PokemonArtwork
               id={featured.id}
               alt=""
-              sizes="176px"
+              sizes="224px"
               priority
-              className="drop-shadow-md transition-transform duration-300 ease-out group-hover:scale-110"
+              className="drop-shadow-xl transition-transform duration-300 ease-out group-hover:scale-110"
             />
           </div>
 
           <span className="text-muted-foreground font-mono text-xs">
             {formatDexNumber(featured.id)} · {generationLabel(featured.generation)}
           </span>
-          <span className="text-foreground text-xl font-bold tracking-tight">
+          <span className="text-foreground text-2xl font-bold tracking-tight">
             {prettifyName(featured.name)}
           </span>
           <span className="flex flex-wrap justify-center gap-1.5">

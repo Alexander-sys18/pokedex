@@ -158,7 +158,7 @@ export default async function PokemonDetailPage({ params }: PageProps) {
                 <LoreBadge icon={<Crown className="size-3" />} label="Legendario" tone="amber" />
               ) : null}
               {detail.isMythical ? (
-                <LoreBadge icon={<Award className="size-3" />} label="Singular" tone="violet" />
+                <LoreBadge icon={<Award className="size-3" />} label="Singular" tone="blue" />
               ) : null}
               {detail.isBaby ? (
                 <LoreBadge icon={<Baby className="size-3" />} label="Bebé" tone="pink" />
@@ -539,11 +539,11 @@ function LoreBadge({
 }: {
   icon: React.ReactNode;
   label: string;
-  tone: "amber" | "violet" | "pink";
+  tone: "amber" | "blue" | "pink";
 }) {
   const tones = {
     amber: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-    violet: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+    blue: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
     pink: "bg-pink-500/15 text-pink-600 dark:text-pink-400",
   } as const;
   return (

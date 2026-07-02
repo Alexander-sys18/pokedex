@@ -1,8 +1,8 @@
 "use client";
 
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface PhotoSearchButtonProps {
@@ -34,8 +34,12 @@ async function toCompressedDataUrl(file: File): Promise<string> {
 export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Two inputs: with `capture` the phone jumps straight to the camera; without
+  // it, to the gallery/file picker. The menu lets the user choose either.
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -79,36 +83,92 @@ export function PhotoSearchButton({ onIdentified }: PhotoSearchButtonProps) {
     }
   };
 
+  const onFileChosen = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) void handleFile(file);
+  };
+
   return (
     <div className="relative">
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (file) void handleFile(file);
-        }}
+        onChange={onFileChosen}
       />
+      <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={onFileChosen} />
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
+        onClick={() => {
+          // Retrying after a result: the stale popover must not cover the menu.
+          setResult(null);
+          setMenuOpen((open) => !open);
+        }}
         disabled={loading}
         aria-busy={loading}
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
         aria-label="Buscar por foto"
         title="Buscar por foto"
         className={cn(
-          "border-border bg-surface text-foreground inline-flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-medium",
-          "hover:bg-surface-hover focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none",
+          "inline-flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold",
+          "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-300",
+          "hover:bg-red-500/20 focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none",
           "disabled:opacity-60",
         )}
       >
         {loading ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
-        <span className="hidden sm:inline">{loading ? "Identificando…" : "Foto"}</span>
+        <span>{loading ? "Identificando…" : "Foto"}</span>
       </button>
+
+      {menuOpen ? (
+        <>
+          {/* Invisible backdrop: a tap anywhere else closes the menu. */}
+          <button
+            type="button"
+            aria-label="Cerrar menú"
+            onClick={() => setMenuOpen(false)}
+            className="fixed inset-0 z-20 cursor-default"
+            tabIndex={-1}
+          />
+          <div
+            role="menu"
+            aria-label="Buscar Pokémon por foto"
+            className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-56 rounded-xl border p-1.5 shadow-[var(--shadow-card-hover)]"
+          >
+            <p className="text-muted-foreground px-2.5 pt-1.5 pb-2 text-xs font-medium">
+              Identificar un Pokémon con IA
+            </p>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                cameraRef.current?.click();
+              }}
+              className="text-foreground hover:bg-muted flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors"
+            >
+              <Camera className="size-4 text-red-500" />
+              Hacer una foto
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                galleryRef.current?.click();
+              }}
+              className="text-foreground hover:bg-muted flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors"
+            >
+              <ImagePlus className="size-4 text-red-500" />
+              Subir de la galería
+            </button>
+          </div>
+        </>
+      ) : null}
 
       {result ? (
         <div className="border-border bg-popover absolute top-full right-0 z-30 mt-2 w-64 rounded-xl border p-3 shadow-[var(--shadow-card-hover)]">

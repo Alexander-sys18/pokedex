@@ -15,7 +15,9 @@ de cobertura de tipos, **guardar favoritos** (persistentes) y es **instalable co
 
 ## 🔗 Demo y repositorio
 
-- **Demo online:** _<añade aquí la URL de Render tras el despliegue, p. ej. `https://pokedex.onrender.com`>_
+- **Demo online:** [pokedex-uujc.onrender.com](https://pokedex-uujc.onrender.com)
+  _(plan gratuito de Render: si lleva un rato sin visitas, la primera carga puede tardar ~30-60 s
+  mientras la instancia despierta; después va fluida)_
 - **Repositorio:** [github.com/Alexander-sys18/pokedex](https://github.com/Alexander-sys18/pokedex)
 
 > Alternativa sin desplegar nada: **`docker compose up --build`** y abre `http://localhost:3000`.
